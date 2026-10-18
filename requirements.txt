@@ -1,0 +1,10 @@
+asgiref>=3.8.1
+bcrypt>=4.2.0
+Django>=5.1.0
+dnspython>=2.6.1
+pillow>=10.0.0
+pymongo>=4.9.0
+pypdf>=4.0.0
+python-dotenv>=1.0.0
+reportlab>=4.0.0
+sqlparse>=0.5.0

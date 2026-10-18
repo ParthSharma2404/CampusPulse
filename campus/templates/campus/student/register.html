@@ -1,0 +1,77 @@
+{% extends 'campus/base_public.html' %}
+
+{% block title %}Student Registration | CampusPulse{% endblock %}
+
+{% block content %}
+<div style="min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+  <div class="clean-card" style="max-width: 500px; width: 100%; padding: 2.25rem;">
+    <div style="text-align: center; margin-bottom: 1.75rem;">
+      <div style="margin: 0 auto 1rem; width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--orange-primary); color: white; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-orange);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+      </div>
+      <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 0.25rem;">Student Registration</h1>
+      <p style="color: var(--text-secondary); font-size: 0.875rem;">Create your university maintenance account.</p>
+    </div>
+
+    <form method="POST" action="{% url 'student_register' %}">
+      {% csrf_token %}
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Full Name *</label>
+          <input type="text" id="name" name="name" class="form-input-clean" placeholder="e.g. Alex Johnson" value="{{ request.POST.name|default:'' }}" required>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Registration Number *</label>
+          <input type="text" id="reg_no" name="registration_number" class="form-input-clean" placeholder="e.g. 21BCE1042" style="text-transform: uppercase;" value="{{ request.POST.registration_number|default:'' }}" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Email *</label>
+          <input type="email" id="email" name="email" class="form-input-clean" placeholder="alex.j@campus.edu" value="{{ request.POST.email|default:'' }}" required>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Phone Number *</label>
+          <input type="tel" id="phone" name="phone" class="form-input-clean" placeholder="+91 9876543210" value="{{ request.POST.phone|default:'' }}" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Hostel Block (Optional)</label>
+          <input type="text" id="hostel_block" name="default_hostel_block" class="form-input-clean" placeholder="e.g. Boys Hostel 3" value="{{ request.POST.default_hostel_block|default:'' }}">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Room Number (Optional)</label>
+          <input type="text" id="room_number" name="default_room_number" class="form-input-clean" placeholder="e.g. 302" value="{{ request.POST.default_room_number|default:'' }}">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Password *</label>
+          <input type="password" id="password" name="password" class="form-input-clean" placeholder="Min. 6 chars" required>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Confirm Password *</label>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-input-clean" placeholder="Repeat password" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-clean btn-clean-orange" style="width: 100%; padding: 0.875rem; font-size: 0.9375rem;">
+        Complete Registration ➔
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+      Already have an account? <a href="{% url 'student_login' %}" style="color: var(--orange-primary); font-weight: 600;">Sign in</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

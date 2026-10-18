@@ -1,0 +1,39 @@
+{% extends 'campus/base_public.html' %}
+
+{% block title %}Admin Gateway | CampusPulse{% endblock %}
+
+{% block content %}
+<div style="min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;">
+  <div class="clean-card" style="max-width: 420px; width: 100%; padding: 2.25rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="margin: 0 auto 1rem; width: 48px; height: 48px; border-radius: var(--radius-md); background: #111827; border: 2px solid var(--orange-primary); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 87, 34, 0.2);">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+      <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 0.25rem;">Admin Command Gateway</h1>
+      <p style="color: var(--text-secondary); font-size: 0.875rem;">Authorized facility management and staff operations only.</p>
+    </div>
+
+    <form method="POST" action="{% url 'admin_login' %}">
+      {% csrf_token %}
+      
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Staff Email</label>
+        <input type="email" id="email" name="email" class="form-input-clean" placeholder="admin@campus.edu" required autofocus>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Password</label>
+        <input type="password" id="password" name="password" class="form-input-clean" placeholder="••••••••••••" required>
+      </div>
+
+      <button type="submit" class="btn-clean btn-clean-primary" style="width: 100%; padding: 0.75rem;">
+        Sign In to Operations Console
+      </button>
+    </form>
+
+    <div style="margin-top: 1.75rem; padding-top: 1rem; border-top: 1px solid var(--border-light); text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
+      Default Demo: <code style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">admin@campus.edu</code> / <code style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">admin123</code>
+    </div>
+  </div>
+</div>
+{% endblock %}

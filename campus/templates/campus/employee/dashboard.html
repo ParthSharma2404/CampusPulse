@@ -1,0 +1,269 @@
+{% extends 'campus/base_app.html' %}
+
+{% block title %}Duty Operations Queue | {{ employee.name }}{% endblock %}
+
+{% block content %}
+<!-- Executive Duty Header -->
+<div class="clean-card" style="margin-bottom: 1.25rem; background: #111827; color: #FFFFFF; border-color: #1F2937; padding: 1.15rem 1.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.25rem;">
+        <h1 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: #FFFFFF; margin: 0;">
+          Staff Duty Queue: {{ employee.name }}
+        </h1>
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #9CA3AF; background: #1F2937; padding: 2px 7px; border-radius: 4px;">
+          {{ employee.employee_id }}
+        </span>
+        {% if department %}
+          <span style="font-size: 0.72rem; font-weight: 700; color: #FFFFFF; background: {{ department.color_tag|default:'#4F46E5' }}; padding: 2px 8px; border-radius: 4px;">
+            {{ department.name }}
+          </span>
+        {% endif %}
+      </div>
+      <div style="color: #9CA3AF; font-size: 0.8125rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <span>Bound Hostels on Active Duty:</span>
+        {% for b in assigned_buildings %}
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--orange-primary); background: rgba(255,87,34,0.15); padding: 1px 6px; border-radius: 3px;">
+            {{ b }}
+          </span>
+        {% empty %}
+          <span style="color: #D1D5DB; font-style: italic;">All Campus Facilities</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <a href="{% url 'employee_logout' %}" class="btn-clean btn-clean-secondary btn-clean-sm" style="background: #1F2937; color: #FFFFFF; border-color: #374151;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Sign Out</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Compact Duty Metrics -->
+<div class="admin-kpi-row" style="margin-bottom: 1.25rem;">
+  <div class="admin-kpi-card-orange">
+    <div class="admin-kpi-label">Assigned For Repair</div>
+    <div class="admin-kpi-number">{{ count_assigned }}</div>
+    <div class="admin-kpi-subtext">Awaiting technician action</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Work In Progress</div>
+    <div class="admin-kpi-number" style="color: var(--text-primary);">{{ count_in_progress }}</div>
+    <div class="admin-kpi-subtext">Currently being repaired</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Repairs Completed</div>
+    <div class="admin-kpi-number" style="color: #059669;">{{ count_resolved }}</div>
+    <div class="admin-kpi-subtext">Broadcasted to students</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Duty Shift</div>
+    <div class="admin-kpi-number" style="font-size: 1.15rem; color: var(--text-primary); margin: 0.5rem 0;">Active</div>
+    <div class="admin-kpi-subtext">{{ employee.duty_shift|default:"General Shift (8 AM - 6 PM)" }}</div>
+  </div>
+</div>
+
+<!-- Filter Toolbar -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="?status=ACTIVE{% if building_filter %}&building={{ building_filter }}{% endif %}" class="btn-clean btn-clean-sm {% if status_filter == 'ACTIVE' %}btn-clean-primary{% else %}btn-clean-secondary{% endif %}">
+      Active Queue ({{ count_assigned|add:count_in_progress }})
+    </a>
+    <a href="?status=RESOLVED{% if building_filter %}&building={{ building_filter }}{% endif %}" class="btn-clean btn-clean-sm {% if status_filter == 'RESOLVED' %}btn-clean-primary{% else %}btn-clean-secondary{% endif %}">
+      Completed History ({{ count_resolved }})
+    </a>
+  </div>
+
+  <!-- Building Filter Pills -->
+  <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+    <a href="?status={{ status_filter }}" class="btn-clean btn-clean-xs {% if not building_filter %}btn-clean-primary{% else %}btn-clean-secondary{% endif %}">
+      All My Hostels
+    </a>
+    {% for b in assigned_buildings %}
+      <a href="?status={{ status_filter }}&building={{ b }}" class="btn-clean btn-clean-xs {% if building_filter == b %}btn-clean-primary{% else %}btn-clean-secondary{% endif %}">
+        {{ b }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Complaints Queue -->
+<div class="data-table-card">
+  <div class="data-table-header">
+    <div>
+      <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Hostel Complaints & Defect Orders</h2>
+      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 2px;">Directly assigned maintenance complaints requiring your technical fulfillment</p>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+      {{ issues|length }} tickets shown
+    </div>
+  </div>
+
+  <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+    {% for issue in issues %}
+      <div class="clean-card" style="padding: 1.25rem; border-color: var(--border-light); background: #FFFFFF;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.35rem;">
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
+                #{{ issue.ticket_id }}
+              </span>
+              <span class="status-pill {% if issue.status == 'RESOLVED' %}status-pill-resolved{% elif issue.status == 'IN_PROGRESS' %}status-pill-progress{% else %}status-pill-reported{% endif %}">
+                {% if issue.status == 'RESOLVED' %}Resolved & Closed
+                {% elif issue.status == 'IN_PROGRESS' %}Repair In Progress
+                {% else %}Assigned On Duty{% endif %}
+              </span>
+              {% if issue.priority == 'URGENT' %}
+                <span class="priority-pill priority-pill-urgent">Urgent Hotspot</span>
+              {% elif issue.priority == 'HIGH' %}
+                <span class="priority-pill priority-pill-high">High Priority</span>
+              {% endif %}
+            </div>
+
+            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.35rem;">
+              {{ issue.title }}
+            </h3>
+
+            <!-- Location Coordinates (Crisp, High Visibility for Technician) -->
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: #F3F4F6; border: 1px solid var(--border-light); padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.8125rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              <span><strong>Building:</strong> {{ issue.location.building_or_block }}</span>
+              <span>•</span>
+              <span><strong>Room:</strong> {{ issue.location.room_or_area }}</span>
+              {% if issue.location.floor %}
+                <span>•</span>
+                <span><strong>Floor:</strong> {{ issue.location.floor }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-align: right;">
+            <div>Reported: <strong>{{ issue.created_at_fmt }}</strong></div>
+            {% if issue.report_count > 1 %}
+              <div style="color: var(--orange-primary); font-weight: 700; margin-top: 2px;">
+                {{ issue.report_count }} Students Impacted
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; background: #FAFAFA; border: 1px solid #F3F4F6; padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+          {{ issue.description }}
+        </div>
+
+        <!-- Student Photo Attachment (If present) -->
+        {% if issue.images %}
+          <div style="margin-bottom: 1rem;">
+            <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.35rem;">
+              Student Photo Evidence
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              {% for img in issue.images %}
+                <a href="{{ img }}" target="_blank" style="display: block; width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-light);">
+                  <img src="{{ img }}" alt="Defect" style="width: 100%; height: 100%; object-fit: cover;">
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Fulfillment Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; pt: 0.75rem; border-top: 1px solid var(--border-light); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            {% if issue.status == 'RESOLVED' %}
+              <div style="font-size: 0.75rem; color: #166534; background: #ECFDF5; border: 1px solid #DCFCE7; padding: 0.4rem 0.75rem; border-radius: var(--radius-sm);">
+                <strong>Resolution Verified:</strong> {{ issue.resolution_notes }}
+                <span style="color: var(--text-muted); margin-left: 8px;">({{ issue.resolved_at_fmt }})</span>
+              </div>
+            {% else %}
+              <span style="font-size: 0.75rem; color: var(--text-muted);">
+                Assigned to your duty shift for {{ issue.location.building_or_block }}
+              </span>
+            {% endif %}
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            {% if issue.status == 'ASSIGNED' or issue.status == 'REPORTED' %}
+              <form method="POST" action="{% url 'employee_start_work' issue.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn-clean btn-clean-secondary btn-clean-sm">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Start Repair Work</span>
+                </button>
+              </form>
+            {% endif %}
+
+            {% if issue.status != 'RESOLVED' %}
+              <button type="button" onclick="openResolveModal('{{ issue.id }}', '{{ issue.ticket_id }}', '{{ issue.location.building_or_block }} • {{ issue.location.room_or_area }}');" class="btn-clean btn-clean-orange btn-clean-sm">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span>Fulfill & Broadcast Resolution ➔</span>
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    {% empty %}
+      <div class="clean-card" style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
+        No maintenance tickets in this queue. Great job! All complaints in your assigned hostels have been resolved.
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Complete Repair Modal -->
+<div id="resolveModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+  <div class="clean-card" style="max-width: 520px; width: 100%; background: #FFFFFF; padding: 1.75rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div>
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0;">Fulfill Defect Repair</h3>
+        <p id="modalTicketSubtitle" style="font-size: 0.8125rem; color: var(--text-secondary); margin: 2px 0 0;"></p>
+      </div>
+      <button type="button" onclick="closeResolveModal();" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+
+    <form id="resolveForm" method="POST" action="" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">
+          Technician Action Taken (Broadcasted to Student) *
+        </label>
+        <textarea name="resolution_notes" rows="3" class="form-input-clean" placeholder="Describe the physical fix: e.g. Replaced capacitor and cleaned dust filters. AC cooling verified at 18°C." required></textarea>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">
+          Optional Completion Photo Proof
+        </label>
+        <input type="file" name="resolution_photo" accept="image/*" class="form-input-clean">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" onclick="closeResolveModal();" class="btn-clean btn-clean-secondary btn-clean-sm">Cancel</button>
+        <button type="submit" class="btn-clean btn-clean-orange btn-clean-sm">
+          Complete & Push Live Alert ➔
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openResolveModal(issueId, ticketId, locationText) {
+    const modal = document.getElementById('resolveModal');
+    const form = document.getElementById('resolveForm');
+    const subtitle = document.getElementById('modalTicketSubtitle');
+    form.action = '/employee/issues/' + issueId + '/resolve/';
+    subtitle.textContent = '#' + ticketId + ' (' + locationText + ')';
+    modal.style.display = 'flex';
+  }
+
+  function closeResolveModal() {
+    document.getElementById('resolveModal').style.display = 'none';
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'campus/base.html' %}
+
+{% block body %}
+<!-- Public Header Navigation (Full Width) -->
+<header class="public-header">
+  <div class="public-header-inner">
+    <a href="{% url 'landing' %}" style="display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1.25rem; color: var(--text-primary); letter-spacing: -0.02em;">
+      <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--orange-primary); display: flex; align-items: center; justify-content: center; color: white; box-shadow: var(--shadow-orange);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+      </div>
+      <span>Campus<span style="color: var(--orange-primary);">Pulse</span></span>
+    </a>
+
+    <nav style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary);">
+      <a href="{% url 'landing' %}#screen-workflow" style="transition: color 0.15s ease;">How It Works</a>
+      <a href="{% url 'landing' %}#screen-departments" style="transition: color 0.15s ease;">Campus Departments</a>
+      <a href="{% url 'landing' %}#screen-proof-faq" style="transition: color 0.15s ease;">FAQs</a>
+    </nav>
+
+    <div style="display: flex; align-items: center; gap: 0.875rem;">
+      <a href="{% url 'admin_login' %}" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); padding: 0.45rem 0.75rem; border-radius: var(--radius-sm); transition: color 0.15s ease;">Staff Admin</a>
+      {% if request.session.student_id %}
+        <a href="{% url 'student_dashboard' %}" class="btn-clean btn-clean-orange btn-clean-sm">My Dashboard</a>
+      {% elif request.session.admin_id %}
+        <a href="{% url 'admin_dashboard' %}" class="btn-clean btn-clean-primary btn-clean-sm">Operations Command</a>
+      {% else %}
+        <a href="{% url 'student_login' %}" class="btn-clean btn-clean-secondary btn-clean-sm">Student Sign In</a>
+        <a href="{% url 'student_register' %}" class="btn-clean btn-clean-orange btn-clean-sm">Register</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="public-main-content">
+  {% block content %}{% endblock %}
+</main>
+{% endblock %}

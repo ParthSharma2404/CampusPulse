@@ -1,0 +1,35 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+
+# Environment Variables & Credentials
+.env
+.env.local
+
+# Python Compiled Files & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# Local SQLite databases (Django default, not used by MongoDB Atlas)
+db.sqlite3
+db.sqlite3-journal
+
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Temporary test outputs
+test_plain.pdf
+*.log

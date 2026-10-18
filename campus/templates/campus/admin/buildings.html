@@ -1,0 +1,164 @@
+{% extends 'campus/base_app.html' %}
+
+{% block title %}Campus Hostels & Buildings | Operations Command{% endblock %}
+
+{% block content %}
+<!-- Executive Page Header -->
+<div class="clean-card" style="margin-bottom: 1.25rem; background: #111827; color: #FFFFFF; border-color: #1F2937; padding: 1.15rem 1.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.15rem; color: #FFFFFF;">
+        Campus Hostels & Facilities Infrastructure
+      </h1>
+      <p style="color: #9CA3AF; font-size: 0.8125rem; margin: 0;">
+        Registry of Boys Hostels (BH1-BH13), Girls Hostels (GH1-GH13), and Academic Facilities for direct defect dispatch.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{% url 'admin_employees' %}" class="btn-clean btn-clean-secondary btn-clean-sm" style="background: #1F2937; color: #FFFFFF; border-color: #374151;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span>Manage Staff & Duty</span>
+      </a>
+      <button type="button" onclick="document.getElementById('addBuildingModal').style.display='flex';" class="btn-clean btn-clean-orange btn-clean-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Add Campus Building</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Compact Stats Row -->
+<div class="admin-kpi-row" style="margin-bottom: 1.25rem;">
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Total Registered Units</div>
+    <div class="admin-kpi-number">{{ buildings|length }}</div>
+    <div class="admin-kpi-subtext">Mapped campus facilities</div>
+  </div>
+  <div class="admin-kpi-card-orange">
+    <div class="admin-kpi-label">Active Hostels</div>
+    <div class="admin-kpi-number">{{ total_hostels }}</div>
+    <div class="admin-kpi-subtext">BH1-BH13 & GH1-GH13</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Active For Allocation</div>
+    <div class="admin-kpi-number" style="color: #059669;">{{ total_active }}</div>
+    <div class="admin-kpi-subtext">Operational coverage</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">SLA Auto-Dispatch</div>
+    <div class="admin-kpi-number" style="color: var(--orange-primary);">100%</div>
+    <div class="admin-kpi-subtext">Direct to on-duty staff</div>
+  </div>
+</div>
+
+<!-- Buildings Grid -->
+<div class="data-table-card">
+  <div class="data-table-header">
+    <div>
+      <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Campus Infrastructure Directory</h2>
+      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 2px;">Hostels and facility blocks wired to automatic defect routing</p>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+      {{ total_active }} active units
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; padding: 1.25rem;">
+    {% for b in buildings %}
+      <div class="clean-card" style="padding: 1rem; border-color: var(--border-light); background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--orange-primary); background: var(--orange-light); padding: 2px 8px; border-radius: var(--radius-sm);">
+              {{ b.code }}
+            </span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; {% if b.type == 'HOSTEL_BOYS' %}color: #2563EB;{% elif b.type == 'HOSTEL_GIRLS' %}color: #DB2777;{% else %}color: #059669;{% endif %}">
+              {% if b.type == 'HOSTEL_BOYS' %}Boys Hostel
+              {% elif b.type == 'HOSTEL_GIRLS' %}Girls Hostel
+              {% elif b.type == 'ACADEMIC' %}Academic Block
+              {% else %}Campus Facility{% endif %}
+            </span>
+          </div>
+
+          <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+            {{ b.name }}
+          </h3>
+
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">
+            <div>Floors: <strong>{{ b.total_floors|default:"6" }}</strong></div>
+            <div>Warden / Desk: <strong>{{ b.warden_contact|default:"Campus Central Operations" }}</strong></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; pt: 0.75rem; border-top: 1px solid var(--border-light); margin-top: 0.5rem; padding-top: 0.5rem;">
+          <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; {% if b.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+            {% if b.is_active %}Operational{% else %}Under Renovation{% endif %}
+          </span>
+
+          <form method="POST" action="{% url 'admin_buildings' %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_status">
+            <input type="hidden" name="bldg_id" value="{{ b.id }}">
+            <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+              {% if b.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Add Building Modal -->
+<div id="addBuildingModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+  <div class="clean-card" style="max-width: 500px; width: 100%; background: #FFFFFF; padding: 1.75rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0;">Add Campus Building / Hostel</h3>
+      <button type="button" onclick="document.getElementById('addBuildingModal').style.display='none';" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'admin_buildings' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_building">
+
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Code *</label>
+          <input type="text" name="code" class="form-input-clean" placeholder="e.g. BH14" required>
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Building Name *</label>
+          <input type="text" name="name" class="form-input-clean" placeholder="e.g. Boys Hostel 14" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Category</label>
+          <select name="type" class="form-input-clean">
+            <option value="HOSTEL_BOYS">Boys Hostel</option>
+            <option value="HOSTEL_GIRLS">Girls Hostel</option>
+            <option value="ACADEMIC">Academic Block</option>
+            <option value="FACILITY">Campus Facility</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Floors</label>
+          <input type="number" name="total_floors" value="10" min="1" max="25" class="form-input-clean">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Warden / Support Phone</label>
+        <input type="text" name="warden_contact" class="form-input-clean" placeholder="+91 98000 00000">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" onclick="document.getElementById('addBuildingModal').style.display='none';" class="btn-clean btn-clean-secondary btn-clean-sm">Cancel</button>
+        <button type="submit" class="btn-clean btn-clean-orange btn-clean-sm">Register Building</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

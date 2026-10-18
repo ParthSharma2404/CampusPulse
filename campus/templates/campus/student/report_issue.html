@@ -1,0 +1,142 @@
+{% extends 'campus/base_app.html' %}
+
+{% block title %}Report Campus Defect | CampusPulse{% endblock %}
+
+{% block content %}
+<div style="max-width: 760px; margin: 0 auto;">
+  
+  <div style="margin-bottom: 1.75rem;">
+    <a href="{% url 'student_dashboard' %}" class="btn-clean btn-clean-secondary btn-clean-sm" style="margin-bottom: 1rem;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      <span>Back to Dashboard</span>
+    </a>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 0.25rem;">
+      Report a Defect or Facility Issue
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.875rem;">
+      Submit maintenance requests in just a few clicks. If other students have reported the same room, your complaint will automatically cluster into that hotspot.
+    </p>
+  </div>
+
+  <div class="clean-card">
+    <form method="POST" action="{% url 'report_issue' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Defect Title -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Defect Summary / Title *</label>
+        <input type="text" id="title" name="title" class="form-input-clean" placeholder="e.g. Split AC leaking water and not cooling" required autofocus>
+      </div>
+
+      <!-- Department Selector -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Responsible Department *</label>
+        <select id="department_id" name="department_id" class="form-input-clean" required>
+          <option value="">-- Choose Authorized Department --</option>
+          {% for dept in departments %}
+            <option value="{{ dept.id }}">{{ dept.name }} (SLA: {{ dept.sla_resolution_hours }}h)</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Hidden Student Profile Coordinates (From Registration) -->
+      <div id="studentProfileData" data-hostel="{{ student.default_hostel_block|default:'' }}" data-room="{{ student.default_room_number|default:'' }}" style="display: none;"></div>
+
+      <!-- Location Coordinates Grid -->
+      <div style="background: #F9FAFB; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+            Location Coordinates
+          </div>
+          {% if student.default_hostel_block and student.default_room_number %}
+          <button type="button" id="btnAutofillHostel" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; border-color: var(--orange-primary); color: var(--orange-primary); background: var(--orange-light); cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" title="One-click fill your registered hostel room">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span>Quick-Fill: {{ student.default_hostel_block }} / {{ student.default_room_number }}</span>
+          </button>
+          {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Location Type *</label>
+            <select id="locationTypeSelect" name="location_type" class="form-input-clean" required>
+              <option value="Classroom">Classroom / Lecture Hall</option>
+              <option value="Hostel">Hostel Room</option>
+              <option value="Lab">Laboratory</option>
+              <option value="Corridor">Corridor / Stairs</option>
+              <option value="Washroom">Washroom / Restroom</option>
+              <option value="Common Area">Common Area (Library / Canteen / Ground)</option>
+              <option value="Other">Other (Specify below)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Building / Block Name *</label>
+            <input type="text" id="building_or_block" name="building_or_block" class="form-input-clean" list="campusBuildingsList" placeholder="e.g. BH13, GH2, Academic Block 1" required>
+            <datalist id="campusBuildingsList">
+              {% for b in buildings %}
+                <option value="{{ b.code }}">{{ b.name }}</option>
+              {% endfor %}
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Conditional "Other" Location Field -->
+        <div id="otherLocationGroup" style="display: none; margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Please Specify Other Location Details *</label>
+          <input type="text" id="otherLocationInput" name="other_location_detail" class="form-input-clean" placeholder="e.g. Sports Complex Badminton Court 2 or Admin Parking Lot">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Floor (Optional)</label>
+            <input type="text" id="floor" name="floor" class="form-input-clean" placeholder="e.g. Ground, 1st Floor, 3rd Floor">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Room / Area Code *</label>
+            <input type="text" id="room_or_area" name="room_or_area" class="form-input-clean" placeholder="e.g. Room 302, LH-4, Lab 102" required>
+          </div>
+        </div>
+
+        <!-- Auto-fill Confirmation Badge -->
+        <div id="hostelAutofillNotice" style="display: none; align-items: center; gap: 6px; font-size: 0.75rem; color: #059669; font-weight: 600; margin-top: 0.85rem; padding: 0.4rem 0.75rem; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-sm);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Auto-filled with your registered hostel coordinates ({{ student.default_hostel_block }} • {{ student.default_room_number }}). You can modify if reporting a friend's room.</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Detailed Description *</label>
+        <textarea id="description" name="description" rows="3" class="form-input-clean" placeholder="Describe the issue in detail..." required></textarea>
+      </div>
+
+      <!-- Photo Upload Box -->
+      <div style="margin-bottom: 1.75rem;">
+        <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.375rem;">Photo Attachment (Camera or File)</label>
+        <div onclick="document.getElementById('defectPhotoInput').click();" style="border: 1px dashed var(--border-light); background: #F9FAFB; border-radius: var(--radius-sm); padding: 1.5rem; text-align: center; cursor: pointer;">
+          <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: #E5E7EB; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; color: var(--text-primary);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div>
+          <div style="font-weight: 600; font-size: 0.875rem; color: var(--text-primary);">Tap to capture photo or select image</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Direct phone camera capture supported</div>
+        </div>
+        <input type="file" id="defectPhotoInput" name="defect_photo" accept="image/*" capture="environment" style="display: none;">
+
+        <div class="preview-container" id="imagePreviewContainer" style="display: none; margin-top: 1rem; position: relative; max-width: 300px; margin-left: auto; margin-right: auto;">
+          <img id="imagePreviewImg" src="" alt="Defect Photo Preview" style="width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+          <button type="button" class="remove-preview-btn" id="removePreviewBtn" title="Remove photo" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer;">✕</button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-clean btn-clean-orange" style="width: 100%; padding: 0.875rem; font-size: 0.9375rem;">
+        Forward Defect to Maintenance Department ➔
+      </button>
+
+    </form>
+  </div>
+
+</div>
+{% endblock %}

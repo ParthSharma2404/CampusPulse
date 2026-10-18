@@ -1,0 +1,421 @@
+{% extends 'campus/base_public.html' %}
+
+{% block title %}CampusPulse | University Facility Intelligence & Defect Management{% endblock %}
+
+{% block content %}
+<div class="landing-wrapper">
+
+  <!-- =====================================================================
+       FLOATING VERTICAL SCREEN NAVIGATION DOCK
+       ===================================================================== -->
+  <div class="screen-nav-dock" aria-label="Section Navigation">
+    <a href="#screen-hero" class="screen-dot active" title="Overview (Screen 1)" aria-label="Go to Overview"></a>
+    <a href="#screen-workflow" class="screen-dot" title="How It Works (Screen 2)" aria-label="Go to Workflow"></a>
+    <a href="#screen-departments" class="screen-dot" title="Campus Departments (Screen 3)" aria-label="Go to Departments"></a>
+    <a href="#screen-proof-faq" class="screen-dot" title="Proof & FAQs (Screen 4)" aria-label="Go to Proof and FAQs"></a>
+  </div>
+
+  <!-- =====================================================================
+       PRISTINE MINIMALIST AMBIENT BACKGROUND
+       ===================================================================== -->
+  <div class="minimal-dot-canvas" aria-hidden="true">
+    <div class="minimal-ambient-glow"></div>
+  </div>
+
+  <!-- =====================================================================
+       SCREEN 1: HERO & LIVE COMMAND METRICS (Dedicated 1-Screen Viewport)
+       ===================================================================== -->
+  <section id="screen-hero" class="landing-screen">
+    <div class="landing-screen-inner" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+      
+      <!-- Session Pill Badge -->
+      <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--bg-surface); border: 1px solid var(--border-light); padding: 0.35rem 1rem; border-radius: var(--radius-full); font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); margin: 0 auto 0.85rem; box-shadow: var(--shadow-sm);">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+        <span>University Infrastructure Operations • Active Session 2026–2027</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="hero-headline" style="font-size: clamp(2.2rem, 3.6vw, 3.2rem); text-align: center; margin: 0 auto 0.65rem; line-height: 1.15; max-width: 820px;">
+        Report campus defects in <br>
+        <span style="color: var(--orange-primary);">just a few clicks.</span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="hero-subtitle" style="font-size: 1.05rem; text-align: center; max-width: 680px; margin: 0 auto 1.15rem; line-height: 1.5;">
+        From leaking classroom ACs to broken hostel geysers—CampusPulse connects students directly to university maintenance departments. Featuring instant mobile camera capture, duplicate hotspot clustering, and real-time resolution push alerts.
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="hero-cta-group" style="display: flex; justify-content: center; align-items: center; gap: 0.85rem; margin: 0 auto 0.85rem;">
+        {% if request.session.student_id %}
+          <a href="{% url 'student_dashboard' %}" class="btn-clean btn-clean-primary" style="padding: 0.75rem 1.75rem; font-size: 0.9375rem;">
+            <span>Open Student Dashboard</span>
+          </a>
+          <a href="{% url 'report_issue' %}" class="btn-clean btn-clean-orange" style="padding: 0.75rem 1.75rem; font-size: 0.9375rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Report Defect Now</span>
+          </a>
+        {% elif request.session.admin_id %}
+          <a href="{% url 'admin_dashboard' %}" class="btn-clean btn-clean-orange" style="padding: 0.75rem 1.75rem; font-size: 0.9375rem;">
+            <span>Operations Command Center</span>
+          </a>
+          <a href="{% url 'admin_departments' %}" class="btn-clean btn-clean-primary" style="padding: 0.75rem 1.75rem; font-size: 0.9375rem;">
+            <span>Manage Departments</span>
+          </a>
+        {% else %}
+          <a href="{% url 'student_register' %}" class="btn-clean btn-clean-orange" style="padding: 0.75rem 1.75rem; font-size: 0.9375rem;">
+            <span>Get Started Free ➔</span>
+          </a>
+          <a href="{% url 'student_login' %}" class="btn-clean btn-clean-primary" style="padding: 0.75rem 1.75rem; font-size: 0.9375rem;">
+            <span>Student Sign In</span>
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Feature Checkmarks -->
+      <div class="hero-feature-pills" style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin: 0 auto 1.25rem;">
+        <span style="display: flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange-primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Instant Mobile Camera
+        </span>
+        <span style="display: flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange-primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Smart Hotspot Clustering
+        </span>
+        <span style="display: flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--orange-primary)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Real-Time Push Alerts
+        </span>
+      </div>
+
+      <!-- Live University Metrics Ticker Cards (4 Cards) -->
+      <div class="hero-metrics-grid" style="max-width: 1140px; width: 100%; margin: 0 auto;">
+        <div class="hero-metric-card reveal-on-scroll stagger-1" style="padding: 0.9rem 0.75rem;">
+          <div class="hero-metric-val" style="color: var(--orange-primary); font-size: 2.1rem;">{{ total_resolved }}</div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Defects Resolved</div>
+          <div style="font-size: 0.75rem; color: #059669; font-weight: 600; margin-top: 2px;">Verified repairs closed</div>
+        </div>
+
+        <div class="hero-metric-card reveal-on-scroll stagger-2" style="padding: 0.9rem 0.75rem;">
+          <div class="hero-metric-val" style="color: var(--dark-obsidian); font-size: 2.1rem;">{{ total_active }}</div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Active Hotspots</div>
+          <div style="font-size: 0.75rem; color: var(--orange-primary); font-weight: 600; margin-top: 2px;">Under inspection</div>
+        </div>
+
+        <div class="hero-metric-card reveal-on-scroll stagger-3" style="padding: 0.9rem 0.75rem;">
+          <div class="hero-metric-val" style="color: var(--dark-obsidian); font-size: 2.1rem;">{{ total_departments }}</div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Campus Departments</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">With guaranteed SLAs</div>
+        </div>
+
+        <div class="hero-metric-card reveal-on-scroll stagger-4" style="padding: 0.9rem 0.75rem;">
+          <div class="hero-metric-val" style="color: #059669; font-size: 2.1rem;">&lt; 6h</div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Average Turnaround</div>
+          <div style="font-size: 0.75rem; color: #059669; font-weight: 600; margin-top: 2px;">From report to fix</div>
+        </div>
+      </div>
+
+      <!-- Scroll cue to Screen 2 -->
+      <a href="#screen-workflow" class="screen-scroll-cue" style="display: inline-flex; align-items: center; justify-content: center; margin: 1rem auto 0;" aria-label="Explore Workflow">
+        <span>How CampusPulse Works</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SCREEN 2: 3-STEP FRICTIONLESS WORKFLOW (Dedicated 1-Screen Viewport)
+       ===================================================================== -->
+  <section id="screen-workflow" class="landing-screen">
+    <div class="landing-screen-inner" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+      
+      <!-- Section Header -->
+      <div class="reveal-on-scroll" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto 2.25rem;">
+        <span style="display: inline-block; font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--orange-primary); background: var(--orange-light); padding: 0.35rem 0.85rem; border-radius: var(--radius-full); margin: 0 auto 0.6rem;">Frictionless Workflow</span>
+        <h2 style="font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; margin: 0 auto 0.5rem; text-align: center;">How CampusPulse Works</h2>
+        <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 640px; margin: 0 auto; text-align: center;">No paper complaint registers or waiting at facility offices. Everything is managed digitally in 3 rapid steps.</p>
+      </div>
+
+      <!-- 3 Feature Cards Grid -->
+      <div class="process-grid" style="max-width: 1140px; width: 100%; margin: 0 auto; text-align: left;">
+        
+        <!-- Step 1 -->
+        <div class="process-card reveal-on-scroll stagger-1">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--orange-light); color: var(--orange-primary); display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              </div>
+              <span style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--border-dark);">01</span>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.6rem;">1. Spot & Snap</h3>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+              Snap a photo of the defect right from your mobile camera. Pick your classroom, laboratory, or hostel room from intuitive pickers, or specify a custom spot.
+            </p>
+          </div>
+          <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.75rem; color: var(--orange-primary); font-weight: 700; display: flex; align-items: center; gap: 5px;">
+            <span>● Instant Camera Capture</span>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="process-card reveal-on-scroll stagger-2">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              </div>
+              <span style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--border-dark);">02</span>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.6rem;">2. Hotspot Clustering</h3>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+              If multiple students report an issue in the same room (e.g. 5 reports for AC water leaking in LH-3), CampusPulse clusters them into one ticket and auto-escalates priority to URGENT.
+            </p>
+          </div>
+          <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.75rem; color: #2563EB; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+            <span>● Smart Deduplication</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="process-card reveal-on-scroll stagger-3">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+              <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              </div>
+              <span style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--border-dark);">03</span>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.6rem;">3. Real-Time Push Alerts</h3>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+              Once the facility team completes the fix, they submit resolution notes and broadcast. Every student who reported that defect receives an instant live chime and screen toast.
+            </p>
+          </div>
+          <div style="margin-top: 1.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.75rem; color: #059669; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+            <span>● Real-Time SSE Broadcast</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Scroll cue to Screen 3 -->
+      <a href="#screen-departments" class="screen-scroll-cue" style="display: inline-flex; align-items: center; justify-content: center; margin: 1.5rem auto 0;" aria-label="Explore Campus Departments">
+        <span>Explore 8 Connected Campus Departments</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SCREEN 3: 8 CONNECTED CAMPUS DEPARTMENTS (Dedicated 1-Screen Viewport)
+       ===================================================================== -->
+  <section id="screen-departments" class="landing-screen">
+    <div class="landing-screen-inner" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+      
+      <!-- Section Header -->
+      <div class="reveal-on-scroll" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto 2rem;">
+        <span style="display: inline-block; font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--orange-primary); background: var(--orange-light); padding: 0.35rem 0.85rem; border-radius: var(--radius-full); margin: 0 auto 0.6rem;">University Infrastructure</span>
+        <h2 style="font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; margin: 0 auto 0.5rem; text-align: center;">8 Connected Departments</h2>
+        <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 680px; margin: 0 auto; text-align: center;">Direct defect dispatch with enforceable service-level agreements and active technician coverage.</p>
+      </div>
+
+      <!-- 8 Department Grid (4x2) -->
+      <div class="dept-grid-8" style="max-width: 1180px; width: 100%; margin: 0 auto; text-align: left;">
+        {% for dept in departments %}
+          <div class="dept-tile reveal-on-scroll stagger-{{ forloop.counter }}">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--orange-primary); background: var(--orange-light); padding: 2px 7px; border-radius: 4px;">
+                  {{ dept.code }}
+                </span>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  SLA: {{ dept.sla_resolution_hours }}h
+                </span>
+              </div>
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">{{ dept.name }}</h4>
+              <p style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.45; margin: 0;">
+                {{ dept.description|truncatewords:9 }}
+              </p>
+            </div>
+            <div style="margin-top: 0.85rem; padding-top: 0.5rem; border-top: 1px solid var(--border-light); font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+              <span>{{ dept.contact_person|default:"Department Officer" }}</span>
+              <span style="color: #059669; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+                Active 24/7
+              </span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Scroll cue to Screen 4 -->
+      <a href="#screen-proof-faq" class="screen-scroll-cue" style="display: inline-flex; align-items: center; justify-content: center; margin: 1.5rem auto 0;" aria-label="Explore Proof and FAQs">
+        <span>Verified Proof & FAQs</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SCREEN 4: PROOF, FAQS & FOOTER (Dedicated 1-Screen Viewport)
+       ===================================================================== -->
+  <section id="screen-proof-faq" class="landing-screen" style="justify-content: space-between;">
+    <div class="landing-screen-inner" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; width: 100%;">
+      
+      <!-- Section Header -->
+      <div class="reveal-on-scroll" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0 auto 2rem;">
+        <span style="display: inline-block; font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 0.35rem 0.85rem; border-radius: var(--radius-full); margin: 0 auto 0.6rem;">Verified Transparency</span>
+        <h2 style="font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; margin: 0 auto 0.5rem; text-align: center;">Operational Proof & FAQs</h2>
+        <p style="color: var(--text-secondary); font-size: 1.05rem; max-width: 680px; margin: 0 auto; text-align: center;">Real campus repairs verified by technicians alongside answers to frequent questions.</p>
+      </div>
+
+      <!-- Split Grid: Proof on Left, FAQs on Right -->
+      <div class="split-screen-grid" style="max-width: 1180px; width: 100%; margin: 0 auto; text-align: left;">
+        
+        <!-- Left Column: Verified Resolutions Showcase (Privacy-Protected) -->
+        <div class="reveal-on-scroll stagger-1">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: #10B981;"></div>
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0;">Recent Resolved Defects</h3>
+            </div>
+            <span style="font-size: 0.7rem; font-weight: 600; color: #059669; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 2px 8px; border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Student Privacy Shield Active
+            </span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.875rem;">
+            {% for issue in recent_resolved %}
+              <div class="clean-card" style="padding: 1.15rem; border-color: #A7F3D0; background: #FBFDFB;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                  <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">#{{ issue.ticket_id }}</span>
+                  <span class="status-pill status-pill-resolved">Resolved & Broadcasted</span>
+                </div>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.2rem;">{{ issue.title }}</h4>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                  {% if issue.location.is_privacy_masked %}
+                    <span style="display: inline-flex; align-items: center; gap: 4px; color: #059669; font-weight: 700;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                      {{ issue.location.building_or_block }}
+                    </span>
+                    <span style="background: #F3F4F6; color: #4B5563; padding: 2px 7px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      <span>Room Number Masked for Student Privacy</span>
+                    </span>
+                  {% else %}
+                    <strong>{{ issue.location.building_or_block }} • {{ issue.location.room_or_area }}</strong>
+                  {% endif %}
+                </div>
+                <div style="background: #FFFFFF; border: 1px solid #DCFCE7; padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.75rem; color: #166534;">
+                  <strong>Technician Action:</strong> {{ issue.resolution_notes|default:"Repairs inspected, completed and verified." }}
+                </div>
+              </div>
+            {% empty %}
+              <div class="clean-card" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">
+                <p style="margin: 0; font-size: 0.875rem;">No verified tickets yet. All incoming tickets are tracked with full transparency.</p>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive FAQ Accordion -->
+        <div class="reveal-on-scroll stagger-2">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--orange-primary);"></div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0;">Frequently Asked Questions</h3>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            
+            <div class="faq-accordion-item is-open">
+              <button type="button" class="faq-question-btn">
+                <span>How does duplicate hotspot clustering work?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="faq-answer-wrapper">
+                <div class="faq-answer-panel">
+                  When an issue is reported, CampusPulse automatically checks if there is already an active defect in the same building and room. If so, your complaint increments the hotspot counter and auto-escalates priority to URGENT without creating confusing duplicate tickets.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-accordion-item">
+              <button type="button" class="faq-question-btn">
+                <span>Can I report defects in hostels, cafeterias, or outdoor areas?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="faq-answer-wrapper">
+                <div class="faq-answer-panel">
+                  Yes! Select "Hostel Room", "Common Area", or "Other" in the location picker. For hostel rooms, your registered room coordinates auto-fill with one click.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-accordion-item">
+              <button type="button" class="faq-question-btn">
+                <span>Are students' personal room coordinates and identities kept private?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="faq-answer-wrapper">
+                <div class="faq-answer-panel">
+                  Yes, strictly. Personal hostel room numbers, student registration IDs, and private details are automatically redacted on all public pages. Only university technicians and authenticated facility operations command view dispatch coordinates.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-accordion-item">
+              <button type="button" class="faq-question-btn">
+                <span>How will I know when the defect has been repaired?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="faq-answer-wrapper">
+                <div class="faq-answer-panel">
+                  CampusPulse features native Server-Sent Events (SSE). The moment a maintenance technician submits their fix notes, an instant live audio chime and toast notification pop up on your dashboard.
+                </div>
+              </div>
+            </div>
+
+            <div class="faq-accordion-item">
+              <button type="button" class="faq-question-btn">
+                <span>Where do university technicians and facility heads log in?</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="faq-answer-wrapper">
+                <div class="faq-answer-panel">
+                  Facility staff access the operations console at <code>/admin/login/</code>. Students sign in at <code>/student/login/</code>.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Production Footer Strip -->
+    <div style="width: 100%; max-width: 1240px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.8125rem; color: var(--text-muted);">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <div style="width: 24px; height: 24px; border-radius: 6px; background: var(--orange-primary); color: white; display: flex; align-items: center; justify-content: center;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+        </div>
+        <span style="font-weight: 700; color: var(--text-primary);">CampusPulse</span>
+        <span>• University Infrastructure Operations & Defect Resolution</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <span>Campus Helpline: <strong>+91 (0) 8000-CAMPUS</strong></span>
+        <a href="{% url 'admin_login' %}" style="color: var(--text-primary); font-weight: 700; text-decoration: none;">Staff Admin Gateway ➔</a>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CampusPulse | University Facility Defect Management{% endblock %}</title>
+  
+  {% if request.session.student_id %}
+  <!-- Real-Time SSE Stream Hook -->
+  <meta name="realtime-stream" content="{% url 'notification_stream' %}">
+  {% endif %}
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Black & Orange SaaS Design System -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% block body %}{% endblock %}
+
+<!-- Real-Time & Flash Floating Toast Container -->
+<div id="toast-container" class="toast-hub">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="toast-card toast-{{ message.tags|default:'info' }}" data-autodismiss="true">
+        <div class="toast-icon">
+          {% if message.tags == 'error' %}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {% elif message.tags == 'success' %}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="16 12 12 8 8 12"></polyline></svg>
+          {% else %}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          {% endif %}
+        </div>
+        <div class="toast-content">
+          <div class="toast-title">
+            {% if message.tags == 'error' %}Notification Alert
+            {% elif message.tags == 'success' %}Success
+            {% else %}System Notice{% endif %}
+          </div>
+          <div class="toast-text">{{ message }}</div>
+        </div>
+        <button type="button" class="toast-close" onclick="this.closest('.toast-card').remove();" aria-label="Dismiss notification">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<!-- Real-Time Client Script -->
+<script src="/static/js/app.js"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

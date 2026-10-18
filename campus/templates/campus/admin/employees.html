@@ -1,0 +1,242 @@
+{% extends 'campus/base_app.html' %}
+
+{% block title %}Employment & Duty Setup | Operations Command{% endblock %}
+
+{% block content %}
+<!-- Executive Page Header -->
+<div class="clean-card" style="margin-bottom: 1.25rem; background: #111827; color: #FFFFFF; border-color: #1F2937; padding: 1.15rem 1.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.15rem; color: #FFFFFF;">
+        Employment & Hostel Duty Management
+      </h1>
+      <p style="color: #9CA3AF; font-size: 0.8125rem; margin: 0;">
+        Staff directory and hostel duty binding. Defect tickets raised in assigned hostels are automatically routed to on-duty staff.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{% url 'admin_buildings' %}" class="btn-clean btn-clean-secondary btn-clean-sm" style="background: #1F2937; color: #FFFFFF; border-color: #374151;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Hostels Directory</span>
+      </a>
+      <button type="button" onclick="document.getElementById('addEmployeeModal').style.display='flex';" class="btn-clean btn-clean-orange btn-clean-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Register Staff Member</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Compact Stats Row -->
+<div class="admin-kpi-row" style="margin-bottom: 1.25rem;">
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Total Operational Staff</div>
+    <div class="admin-kpi-number">{{ total_employees }}</div>
+    <div class="admin-kpi-subtext">Registered technicians</div>
+  </div>
+  <div class="admin-kpi-card-orange">
+    <div class="admin-kpi-label">Active Duty Coverage</div>
+    <div class="admin-kpi-number">{{ active_employees }}</div>
+    <div class="admin-kpi-subtext">Available for auto-allocation</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Hostels Covered</div>
+    <div class="admin-kpi-number" style="color: #059669;">26</div>
+    <div class="admin-kpi-subtext">BH1-BH13 & GH1-GH13</div>
+  </div>
+  <div class="admin-kpi-card">
+    <div class="admin-kpi-label">Direct Routing</div>
+    <div class="admin-kpi-number" style="color: var(--orange-primary);">Real-Time</div>
+    <div class="admin-kpi-subtext">Instant ticket assignment</div>
+  </div>
+</div>
+
+<!-- Employees Directory -->
+<div class="data-table-card">
+  <div class="data-table-header">
+    <div>
+      <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Maintenance Staff & Duty Allocations</h2>
+      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 2px;">Review active technicians and their bound hostel duty zones</p>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+      {{ employees|length }} staff registered
+    </div>
+  </div>
+
+  <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+    {% for emp in employees %}
+      <div class="clean-card" style="padding: 1.25rem; border-color: var(--border-light); background: #FFFFFF; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <div style="width: 44px; height: 44px; border-radius: var(--radius-sm); background: #111827; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+            {{ emp.name|slice:":1"|upper }}
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+              <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin: 0;">{{ emp.name }}</h3>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">({{ emp.employee_id }})</span>
+              <span style="font-size: 0.72rem; font-weight: 700; color: #FFFFFF; background: {{ emp.department.color_tag|default:'#4F46E5' }}; padding: 2px 8px; border-radius: var(--radius-sm);">
+                {{ emp.department.name }}
+              </span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+              <span>Email: <strong>{{ emp.email }}</strong></span>
+              <span>Phone: <strong>{{ emp.phone|default:"N/A" }}</strong></span>
+              <span>Shift: <strong>{{ emp.duty_shift|default:"General Shift" }}</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Hostels Pills -->
+        <div style="flex: 1; min-width: 250px; max-width: 420px;">
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.35rem;">
+            Assigned Duty Hostels / Buildings
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+            {% for b in emp.assigned_buildings %}
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--orange-primary); background: var(--orange-light); padding: 2px 7px; border-radius: 4px;">
+                {{ b }}
+              </span>
+            {% empty %}
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No specific buildings assigned (Campus Reserve)</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-right: 0.5rem; {% if emp.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+            {% if emp.is_active %}On Duty{% else %}Off Duty{% endif %}
+          </span>
+
+          <form method="POST" action="{% url 'admin_employees' %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_status">
+            <input type="hidden" name="employee_id" value="{{ emp.id }}">
+            <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;">
+              {% if emp.is_active %}Take Off Duty{% else %}Set Active On Duty{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div class="clean-card" style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
+        No maintenance employees registered yet. Click "Register Staff Member" above to onboard your first technician.
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Register Employee Modal -->
+<div id="addEmployeeModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;">
+  <div class="clean-card" style="max-width: 680px; width: 100%; background: #FFFFFF; padding: 1.75rem; max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div>
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">Register Maintenance Staff & Bind Duty</h3>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 2px 0 0;">Create employee credentials and designate which hostels they are responsible for.</p>
+      </div>
+      <button type="button" onclick="document.getElementById('addEmployeeModal').style.display='none';" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+
+    <form method="POST" action="{% url 'admin_employees' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_employee">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Full Name *</label>
+          <input type="text" name="name" class="form-input-clean" placeholder="e.g. Ramesh Kumar" required>
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Employee ID *</label>
+          <input type="text" name="employee_id" class="form-input-clean" placeholder="e.g. EMP-HVAC-13" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Email (Login Username) *</label>
+          <input type="email" name="email" class="form-input-clean" placeholder="e.g. ramesh.hvac@campus.edu" required>
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Initial Password *</label>
+          <input type="password" name="password" class="form-input-clean" placeholder="At least 6 characters" required>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Responsible Department *</label>
+          <select name="department_id" class="form-input-clean" required>
+            <option value="">-- Choose Department --</option>
+            {% for d in departments %}
+              <option value="{{ d.id }}">{{ d.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Contact Mobile Phone</label>
+          <input type="text" name="phone" class="form-input-clean" placeholder="+91 98765 43210">
+        </div>
+      </div>
+
+      <!-- Duty Hostels Multi-Select Matrix -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); margin-bottom: 0.4rem;">
+          Assign Duty Hostels (Select all buildings this staff member covers) *
+        </label>
+        
+        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.85rem; max-height: 220px; overflow-y: auto; background: #FAFAFA;">
+          <div style="font-size: 0.7rem; font-weight: 700; color: #2563EB; margin-bottom: 0.4rem; text-transform: uppercase;">
+            Boys Hostels (BH1 - BH13)
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.4rem; margin-bottom: 0.85rem;">
+            {% for b in buildings %}
+              {% if b.type == 'HOSTEL_BOYS' %}
+                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
+                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}">
+                  <span>{{ b.code }}</span>
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div style="font-size: 0.7rem; font-weight: 700; color: #DB2777; margin-bottom: 0.4rem; text-transform: uppercase;">
+            Girls Hostels (GH1 - GH13)
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.4rem; margin-bottom: 0.85rem;">
+            {% for b in buildings %}
+              {% if b.type == 'HOSTEL_GIRLS' %}
+                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
+                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}">
+                  <span>{{ b.code }}</span>
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div style="font-size: 0.7rem; font-weight: 700; color: #059669; margin-bottom: 0.4rem; text-transform: uppercase;">
+            Academic & Common Campus Facilities
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.4rem;">
+            {% for b in buildings %}
+              {% if b.type != 'HOSTEL_BOYS' and b.type != 'HOSTEL_GIRLS' %}
+                <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
+                  <input type="checkbox" name="assigned_buildings" value="{{ b.name }}">
+                  <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.name }}</span>
+                </label>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" onclick="document.getElementById('addEmployeeModal').style.display='none';" class="btn-clean btn-clean-secondary btn-clean-sm">Cancel</button>
+        <button type="submit" class="btn-clean btn-clean-orange btn-clean-sm">Save & Bind Duty</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
