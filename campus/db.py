@@ -11,12 +11,19 @@ _client = None
 _db = None
 
 def get_db():
-    """Returns singleton MongoDB database instance via PyMongo."""
+    """Returns singleton MongoDB database instance via PyMongo with robust DNS fallback."""
     global _client, _db
     if _db is None:
+        try:
+            import dns.resolver
+            r = dns.resolver.get_default_resolver()
+            r.nameservers = ['8.8.8.8', '1.1.1.1', '8.8.4.4']
+        except Exception:
+            pass
+
         uri = getattr(settings, 'MONGODB_URI', 'mongodb://localhost:27017/')
         db_name = getattr(settings, 'MONGODB_DB_NAME', 'campuspulse_db')
-        _client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=5000)
+        _client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=8000)
         _db = _client[db_name]
     return _db
 

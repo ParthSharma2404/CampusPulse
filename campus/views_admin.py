@@ -383,6 +383,11 @@ def admin_employees_view(request):
                 messages.error(request, "Name, Employee ID, Email, Password, and Department are required.")
                 return redirect('admin_employees')
 
+            # Enforce mandatory block/building duty selection
+            if not assigned_buildings or len(assigned_buildings) == 0:
+                messages.error(request, "Duty block selection is required. Please select at least one hostel or campus building.")
+                return redirect('admin_employees')
+
             if users_coll.find_one({"$or": [{"email": email}, {"employee_id": employee_id}]}):
                 messages.error(request, f"An employee with this email or ID '{employee_id}' is already registered.")
                 return redirect('admin_employees')
@@ -407,7 +412,7 @@ def admin_employees_view(request):
                 "created_at": datetime.utcnow()
             }
             users_coll.insert_one(emp_doc)
-            messages.success(request, f"Employee '{name}' registered with duty on {len(assigned_buildings)} buildings.")
+            messages.success(request, f"Employee '{name}' ({employee_id}) successfully registered with duty on {len(assigned_buildings)} building(s).")
             return redirect('admin_employees')
 
         elif action == 'toggle_status':
@@ -424,18 +429,24 @@ def admin_employees_view(request):
         elif action == 'reassign_duty':
             emp_id = request.POST.get('employee_id')
             new_buildings = request.POST.getlist('assigned_buildings')
+            if not new_buildings or len(new_buildings) == 0:
+                messages.error(request, "Duty block selection is required. Please select at least one building.")
+                return redirect('admin_employees')
             if emp_id:
                 users_coll.update_one(
                     {"_id": ObjectId(emp_id), "role": "employee"},
                     {"$set": {"assigned_buildings": new_buildings, "updated_at": datetime.utcnow()}}
                 )
-                messages.success(request, "Staff duty buildings updated successfully.")
+                messages.success(request, f"Staff duty updated ({len(new_buildings)} blocks assigned).")
             return redirect('admin_employees')
 
     # Fetch employees, departments, and active buildings
     employees = list(users_coll.find({"role": "employee"}).sort("name", 1))
     departments = list(dept_coll.find({"is_active": True}).sort("name", 1))
-    dept_map = {str(d['_id']): d for d in departments}
+    dept_map = {}
+    for d in departments:
+        d['id'] = str(d['_id'])
+        dept_map[d['id']] = d
 
     for emp in employees:
         emp['id'] = str(emp['_id'])
@@ -443,6 +454,8 @@ def admin_employees_view(request):
         emp['department'] = dept_map.get(dept_id_str, {"name": "General Maintenance", "color_tag": "#6B7280"})
 
     buildings = list(bldg_coll.find({"is_active": True}).sort([("type", 1), ("code", 1)]))
+    for b in buildings:
+        b['id'] = str(b['_id'])
 
     total_employees = len(employees)
     active_employees = sum(1 for e in employees if e.get('is_active', True))

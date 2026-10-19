@@ -90,7 +90,7 @@
         <!-- Assigned Hostels Pills -->
         <div style="flex: 1; min-width: 250px; max-width: 420px;">
           <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.35rem;">
-            Assigned Duty Hostels / Buildings
+            Assigned Duty Hostels / Blocks
           </div>
           <div style="display: flex; flex-wrap: wrap; gap: 4px;">
             {% for b in emp.assigned_buildings %}
@@ -98,24 +98,28 @@
                 {{ b }}
               </span>
             {% empty %}
-              <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No specific buildings assigned (Campus Reserve)</span>
+              <span style="font-size: 0.75rem; color: #DC2626; font-weight: 600;">No buildings assigned (Unallocated)</span>
             {% endfor %}
           </div>
         </div>
 
         <!-- Action Controls -->
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
           <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-right: 0.5rem; {% if emp.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
             <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
             {% if emp.is_active %}On Duty{% else %}Off Duty{% endif %}
           </span>
+
+          <button type="button" onclick="openEditDutyModal('{{ emp.id }}', '{{ emp.name|escapejs }}', '{{ emp.employee_id|escapejs }}', {{ emp.assigned_buildings|safe }});" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;">
+            Edit Blocks
+          </button>
 
           <form method="POST" action="{% url 'admin_employees' %}" style="margin: 0;">
             {% csrf_token %}
             <input type="hidden" name="action" value="toggle_status">
             <input type="hidden" name="employee_id" value="{{ emp.id }}">
             <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;">
-              {% if emp.is_active %}Take Off Duty{% else %}Set Active On Duty{% endif %}
+              {% if emp.is_active %}Take Off Duty{% else %}Set Active{% endif %}
             </button>
           </form>
         </div>
@@ -128,7 +132,9 @@
   </div>
 </div>
 
-<!-- Register Employee Modal -->
+<!-- =====================================================================
+     MODAL 1: REGISTER NEW EMPLOYEE & BIND DUTY HOSTELS
+     ===================================================================== -->
 <div id="addEmployeeModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;">
   <div class="clean-card" style="max-width: 680px; width: 100%; background: #FFFFFF; padding: 1.75rem; max-height: 90vh; overflow-y: auto;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
@@ -139,7 +145,7 @@
       <button type="button" onclick="document.getElementById('addEmployeeModal').style.display='none';" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
     </div>
 
-    <form method="POST" action="{% url 'admin_employees' %}">
+    <form id="addEmployeeForm" method="POST" action="{% url 'admin_employees' %}">
       {% csrf_token %}
       <input type="hidden" name="action" value="create_employee">
 
@@ -171,7 +177,7 @@
           <select name="department_id" class="form-input-clean" required>
             <option value="">-- Choose Department --</option>
             {% for d in departments %}
-              <option value="{{ d.id }}">{{ d.name }}</option>
+              <option value="{{ d.id|default:d._id }}">{{ d.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -181,13 +187,25 @@
         </div>
       </div>
 
-      <!-- Duty Hostels Multi-Select Matrix -->
+      <!-- Duty Hostels Multi-Select Matrix (REQUIRED) -->
       <div style="margin-bottom: 1.25rem;">
-        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); margin-bottom: 0.4rem;">
-          Assign Duty Hostels (Select all buildings this staff member covers) *
-        </label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+          <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); margin: 0;">
+            Assign Duty Hostels / Blocks <span style="color: var(--orange-primary); font-weight: 800;">(At least 1 required *)</span>
+          </label>
+          <span id="selectedCountBadge" style="font-size: 0.75rem; font-weight: 700; color: var(--orange-primary); background: var(--orange-light); padding: 2px 8px; border-radius: 4px;">
+            0 blocks selected
+          </span>
+        </div>
+
+        <!-- Quick Action Selectors -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+          <button type="button" onclick="quickSelectNew('bh');" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 2px 8px;">Select All BH (1-13)</button>
+          <button type="button" onclick="quickSelectNew('gh');" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 2px 8px;">Select All GH (1-13)</button>
+          <button type="button" onclick="quickSelectNew('clear');" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 2px 8px; color: #DC2626;">Clear All</button>
+        </div>
         
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.85rem; max-height: 220px; overflow-y: auto; background: #FAFAFA;">
+        <div id="buildingSelectBox" style="border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.85rem; max-height: 220px; overflow-y: auto; background: #FAFAFA; transition: border-color 0.2s ease;">
           <div style="font-size: 0.7rem; font-weight: 700; color: #2563EB; margin-bottom: 0.4rem; text-transform: uppercase;">
             Boys Hostels (BH1 - BH13)
           </div>
@@ -195,7 +213,7 @@
             {% for b in buildings %}
               {% if b.type == 'HOSTEL_BOYS' %}
                 <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
-                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}">
+                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}" class="bldg-cb bldg-bh" onchange="updateSelectedCount();">
                   <span>{{ b.code }}</span>
                 </label>
               {% endif %}
@@ -209,7 +227,7 @@
             {% for b in buildings %}
               {% if b.type == 'HOSTEL_GIRLS' %}
                 <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
-                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}">
+                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}" class="bldg-cb bldg-gh" onchange="updateSelectedCount();">
                   <span>{{ b.code }}</span>
                 </label>
               {% endif %}
@@ -223,12 +241,15 @@
             {% for b in buildings %}
               {% if b.type != 'HOSTEL_BOYS' and b.type != 'HOSTEL_GIRLS' %}
                 <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
-                  <input type="checkbox" name="assigned_buildings" value="{{ b.name }}">
+                  <input type="checkbox" name="assigned_buildings" value="{{ b.code }}" class="bldg-cb" onchange="updateSelectedCount();">
                   <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.name }}</span>
                 </label>
               {% endif %}
             {% endfor %}
           </div>
+        </div>
+        <div id="buildingErrorMsg" style="display: none; color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-top: 0.35rem;">
+          Please select at least one hostel block or facility before submitting.
         </div>
       </div>
 
@@ -239,4 +260,168 @@
     </form>
   </div>
 </div>
+
+<!-- =====================================================================
+     MODAL 2: EDIT DUTY HOSTELS FOR EXISTING STAFF
+     ===================================================================== -->
+<div id="editDutyModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;">
+  <div class="clean-card" style="max-width: 680px; width: 100%; background: #FFFFFF; padding: 1.75rem; max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div>
+        <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">Update Assigned Duty Blocks</h3>
+        <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 2px 0 0;">
+          Staff: <strong id="editStaffName" style="color: var(--text-primary);"></strong> (<span id="editStaffId" style="font-family: var(--font-mono);"></span>)
+        </p>
+      </div>
+      <button type="button" onclick="document.getElementById('editDutyModal').style.display='none';" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+    </div>
+
+    <form id="editDutyForm" method="POST" action="{% url 'admin_employees' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reassign_duty">
+      <input type="hidden" name="employee_id" id="editEmployeeMongoId" value="">
+
+      <!-- Quick Action Selectors -->
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap;">
+        <button type="button" onclick="quickSelectEdit('bh');" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 2px 8px;">Select All BH (1-13)</button>
+        <button type="button" onclick="quickSelectEdit('gh');" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 2px 8px;">Select All GH (1-13)</button>
+        <button type="button" onclick="quickSelectEdit('clear');" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 2px 8px; color: #DC2626;">Clear All</button>
+      </div>
+      
+      <div id="editBuildingSelectBox" style="border: 1.5px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.85rem; max-height: 260px; overflow-y: auto; background: #FAFAFA;">
+        <div style="font-size: 0.7rem; font-weight: 700; color: #2563EB; margin-bottom: 0.4rem; text-transform: uppercase;">
+          Boys Hostels (BH1 - BH13)
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.4rem; margin-bottom: 0.85rem;">
+          {% for b in buildings %}
+            {% if b.type == 'HOSTEL_BOYS' %}
+              <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
+                <input type="checkbox" name="assigned_buildings" value="{{ b.code }}" class="edit-bldg-cb edit-bldg-bh">
+                <span>{{ b.code }}</span>
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div style="font-size: 0.7rem; font-weight: 700; color: #DB2777; margin-bottom: 0.4rem; text-transform: uppercase;">
+          Girls Hostels (GH1 - GH13)
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.4rem; margin-bottom: 0.85rem;">
+          {% for b in buildings %}
+            {% if b.type == 'HOSTEL_GIRLS' %}
+              <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
+                <input type="checkbox" name="assigned_buildings" value="{{ b.code }}" class="edit-bldg-cb edit-bldg-gh">
+                <span>{{ b.code }}</span>
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div style="font-size: 0.7rem; font-weight: 700; color: #059669; margin-bottom: 0.4rem; text-transform: uppercase;">
+          Academic & Common Campus Facilities
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.4rem;">
+          {% for b in buildings %}
+            {% if b.type != 'HOSTEL_BOYS' and b.type != 'HOSTEL_GIRLS' %}
+              <label style="display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); background: #FFFFFF; border: 1px solid var(--border-light); padding: 4px 6px; border-radius: 4px; cursor: pointer;">
+                <input type="checkbox" name="assigned_buildings" value="{{ b.code }}" class="edit-bldg-cb">
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.name }}</span>
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div id="editBuildingErrorMsg" style="display: none; color: #DC2626; font-size: 0.75rem; font-weight: 700; margin-top: 0.35rem;">
+        Please select at least one hostel block or building.
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+        <button type="button" onclick="document.getElementById('editDutyModal').style.display='none';" class="btn-clean btn-clean-secondary btn-clean-sm">Cancel</button>
+        <button type="submit" class="btn-clean btn-clean-orange btn-clean-sm">Update Duty Hostels</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function updateSelectedCount() {
+  const count = document.querySelectorAll('#buildingSelectBox input[name="assigned_buildings"]:checked').length;
+  const badge = document.getElementById('selectedCountBadge');
+  if (badge) {
+    badge.innerText = `${count} block${count === 1 ? '' : 's'} selected`;
+    if (count > 0) {
+      badge.style.color = '#059669';
+      badge.style.background = '#ECFDF5';
+      document.getElementById('buildingSelectBox').style.borderColor = 'var(--border-light)';
+      document.getElementById('buildingErrorMsg').style.display = 'none';
+    } else {
+      badge.style.color = 'var(--orange-primary)';
+      badge.style.background = 'var(--orange-light)';
+    }
+  }
+}
+
+function quickSelectNew(type) {
+  if (type === 'bh') {
+    document.querySelectorAll('#buildingSelectBox .bldg-bh').forEach(cb => cb.checked = true);
+  } else if (type === 'gh') {
+    document.querySelectorAll('#buildingSelectBox .bldg-gh').forEach(cb => cb.checked = true);
+  } else if (type === 'clear') {
+    document.querySelectorAll('#buildingSelectBox .bldg-cb').forEach(cb => cb.checked = false);
+  }
+  updateSelectedCount();
+}
+
+document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+  const count = document.querySelectorAll('#buildingSelectBox input[name="assigned_buildings"]:checked').length;
+  if (count === 0) {
+    e.preventDefault();
+    document.getElementById('buildingSelectBox').style.borderColor = '#DC2626';
+    document.getElementById('buildingErrorMsg').style.display = 'block';
+    document.getElementById('buildingSelectBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+});
+
+function openEditDutyModal(empId, empName, empCode, assignedList) {
+  document.getElementById('editEmployeeMongoId').value = empId;
+  document.getElementById('editStaffName').innerText = empName;
+  document.getElementById('editStaffId').innerText = empCode;
+
+  // Clear all checkboxes first
+  document.querySelectorAll('#editBuildingSelectBox .edit-bldg-cb').forEach(cb => {
+    cb.checked = false;
+  });
+
+  // Pre-check assigned buildings
+  if (Array.isArray(assignedList)) {
+    assignedList.forEach(val => {
+      const match = document.querySelector(`#editBuildingSelectBox input[value="${val}"]`);
+      if (match) match.checked = true;
+    });
+  }
+
+  document.getElementById('editDutyModal').style.display = 'flex';
+}
+
+function quickSelectEdit(type) {
+  if (type === 'bh') {
+    document.querySelectorAll('#editBuildingSelectBox .edit-bldg-bh').forEach(cb => cb.checked = true);
+  } else if (type === 'gh') {
+    document.querySelectorAll('#editBuildingSelectBox .edit-bldg-gh').forEach(cb => cb.checked = true);
+  } else if (type === 'clear') {
+    document.querySelectorAll('#editBuildingSelectBox .edit-bldg-cb').forEach(cb => cb.checked = false);
+  }
+}
+
+document.getElementById('editDutyForm').addEventListener('submit', function(e) {
+  const count = document.querySelectorAll('#editBuildingSelectBox input[name="assigned_buildings"]:checked').length;
+  if (count === 0) {
+    e.preventDefault();
+    document.getElementById('editBuildingSelectBox').style.borderColor = '#DC2626';
+    document.getElementById('editBuildingErrorMsg').style.display = 'block';
+    return false;
+  }
+});
+</script>
 {% endblock %}
