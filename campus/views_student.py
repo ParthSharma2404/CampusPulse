@@ -287,8 +287,20 @@ def report_issue_view(request):
             departments = list(dept_coll.find({"is_active": True}))
             for d in departments:
                 d['id'] = str(d['_id'])
+            
+            raw_bldgs = list(get_buildings_collection().find({"is_active": True}))
+            def natural_sort_key(b):
+                code = str(b.get('code', ''))
+                return [int(text) if text.isdigit() else text.upper() for text in re.split(r'(\d+)', code)]
+            bldgs_sorted = sorted(raw_bldgs, key=natural_sort_key)
             return render(request, 'campus/student/report_issue.html', {
                 "departments": departments,
+                "buildings": bldgs_sorted,
+                "boys_hostels": [b for b in bldgs_sorted if b.get('type') == 'HOSTEL_BOYS'],
+                "girls_hostels": [b for b in bldgs_sorted if b.get('type') == 'HOSTEL_GIRLS'],
+                "academic_blocks": [b for b in bldgs_sorted if b.get('type') == 'ACADEMIC'],
+                "facilities": [b for b in bldgs_sorted if b.get('type') == 'FACILITY'],
+                "other_buildings": [b for b in bldgs_sorted if b.get('type') not in ['HOSTEL_BOYS', 'HOSTEL_GIRLS', 'ACADEMIC', 'FACILITY']],
                 "student": student,
                 "form_data": request.POST
             })
@@ -332,10 +344,19 @@ def report_issue_view(request):
     departments = list(dept_coll.find({"is_active": True}))
     for d in departments:
         d['id'] = str(d['_id'])
-    buildings = list(get_buildings_collection().find({"is_active": True}).sort([("type", 1), ("code", 1)]))
+    raw_bldgs = list(get_buildings_collection().find({"is_active": True}))
+    def natural_sort_key(b):
+        code = str(b.get('code', ''))
+        return [int(text) if text.isdigit() else text.upper() for text in re.split(r'(\d+)', code)]
+    bldgs_sorted = sorted(raw_bldgs, key=natural_sort_key)
     return render(request, 'campus/student/report_issue.html', {
         "departments": departments,
-        "buildings": buildings,
+        "buildings": bldgs_sorted,
+        "boys_hostels": [b for b in bldgs_sorted if b.get('type') == 'HOSTEL_BOYS'],
+        "girls_hostels": [b for b in bldgs_sorted if b.get('type') == 'HOSTEL_GIRLS'],
+        "academic_blocks": [b for b in bldgs_sorted if b.get('type') == 'ACADEMIC'],
+        "facilities": [b for b in bldgs_sorted if b.get('type') == 'FACILITY'],
+        "other_buildings": [b for b in bldgs_sorted if b.get('type') not in ['HOSTEL_BOYS', 'HOSTEL_GIRLS', 'ACADEMIC', 'FACILITY']],
         "student": student
     })
 

@@ -1538,6 +1538,327 @@ html {
 .topbar-nav-link {
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
-.topbar-nav-link:hover {
+.student-hero-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1200px) {
+  .student-hero-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* ==========================================================================
+   CUSTOM ANIMATED SEARCHABLE DROPDOWNS & CATEGORY PILLS
+   ========================================================================== */
+@keyframes dropdownPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.custom-dropdown-trigger:hover {
+  border-color: var(--orange-primary) !important;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.08) !important;
+}
+
+.custom-dropdown-trigger:focus {
+  outline: none;
+  border-color: var(--orange-primary) !important;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.18) !important;
+}
+
+.custom-dropdown-popover {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 #F8FAFC;
+}
+
+.custom-dropdown-popover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-dropdown-popover::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.bldg-option-row:hover {
+  background: #F1F5F9 !important;
+}
+
+.bldg-option-row:active {
+  background: #E2E8F0 !important;
+}
+
+/* Category Filter Pills */
+.category-filter-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  background: #FFFFFF;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-pill:hover {
+  border-color: var(--dark-obsidian);
+  color: var(--text-primary);
   transform: translateY(-1px);
+}
+
+.category-pill.active {
+  background: var(--dark-obsidian);
+  color: #FFFFFF;
+  border-color: var(--dark-obsidian);
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.15);
+}
+
+.category-pill .count-badge {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}
+
+.category-pill.active .count-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   COMPREHENSIVE RESPONSIVENESS (MOBILE, TABLET & SMALL DEVICES)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* App Shell Mobile Layout */
+  .app-shell {
+    flex-direction: column;
+  }
+
+  /* Transform Sidebar into Mobile Bottom Navigation Bar */
+  .app-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    height: 60px;
+    margin: 0;
+    padding: 0 1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    border-top: 1px solid var(--border-light);
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07);
+    z-index: 1000;
+  }
+
+  .sidebar-top {
+    flex-direction: row;
+    width: auto;
+    gap: 0.75rem;
+  }
+
+  .sidebar-brand-btn {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    width: auto;
+    gap: 0.75rem;
+  }
+
+  .sidebar-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .sidebar-bottom {
+    flex-direction: row;
+    width: auto;
+    gap: 0.75rem;
+  }
+
+  .sidebar-live-dot {
+    display: none;
+  }
+
+  /* App Workspace Mobile Adjustments */
+  .app-workspace {
+    padding: 0.75rem 0.75rem 75px 0.75rem;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-topbar {
+    padding: 0.65rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .topbar-nav-pills {
+    display: none;
+  }
+
+  .topbar-brand span {
+    font-size: 1.1rem;
+  }
+
+  .topbar-user-pill {
+    padding: 2px 6px;
+  }
+
+  .topbar-user-pill span:last-child {
+    display: none;
+  }
+
+  /* Public Navigation Header on Mobile */
+  .public-header-inner {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .public-header-inner nav {
+    display: none;
+  }
+
+  .public-header-inner .btn-clean {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* KPI Rows on Mobile */
+  .admin-kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .admin-kpi-number {
+    font-size: 1.5rem !important;
+  }
+
+  /* Form Grid 2-column to 1-column */
+  form div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  form div[style*="grid-template-columns: 1fr 2fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Hero Section on Landing Page */
+  #screen-hero {
+    min-height: auto;
+    padding: 2rem 1rem;
+  }
+
+  .hero-headline {
+    font-size: 2rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9375rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .hero-cta-group {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0.65rem !important;
+  }
+
+  .hero-cta-group .btn-clean {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .hero-feature-pills {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+  }
+
+  .hero-metrics-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Data Table & Card Horizontal Scroll */
+  .data-table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Category Filter Pills Horizontal Scroll */
+  .category-filter-pills {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 4px;
+  }
+
+  /* Modals on Mobile */
+  #addBuildingModal .clean-card,
+  #addEmployeeModal .clean-card,
+  #dutyModal .clean-card {
+    max-width: 95% !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    padding: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-kpi-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-headline {
+    font-size: 1.7rem !important;
+  }
+
+  .public-header-inner {
+    justify-content: center;
+  }
 }

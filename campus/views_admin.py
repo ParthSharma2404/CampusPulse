@@ -376,16 +376,35 @@ def admin_buildings_view(request):
                     messages.success(request, f"Building '{bldg.get('name')}' {status_text}.")
             return redirect('admin_buildings')
 
-    # Fetch buildings sorted by type and code
-    buildings = list(bldg_coll.find().sort([("type", 1), ("code", 1)]))
-    for b in buildings:
+    import re
+
+    def natural_sort_key(bldg):
+        code = str(bldg.get('code', ''))
+        return [int(text) if text.isdigit() else text.upper() for text in re.split(r'(\d+)', code)]
+
+    # Fetch buildings sorted naturally
+    raw_buildings = list(bldg_coll.find())
+    for b in raw_buildings:
         b['id'] = str(b['_id'])
 
-    total_hostels = sum(1 for b in buildings if b.get('type') in ['HOSTEL_BOYS', 'HOSTEL_GIRLS'])
+    buildings = sorted(raw_buildings, key=natural_sort_key)
+
+    boys_hostels = [b for b in buildings if b.get('type') == 'HOSTEL_BOYS']
+    girls_hostels = [b for b in buildings if b.get('type') == 'HOSTEL_GIRLS']
+    academic_blocks = [b for b in buildings if b.get('type') == 'ACADEMIC']
+    facilities = [b for b in buildings if b.get('type') == 'FACILITY']
+    other_buildings = [b for b in buildings if b.get('type') not in ['HOSTEL_BOYS', 'HOSTEL_GIRLS', 'ACADEMIC', 'FACILITY']]
+
+    total_hostels = len(boys_hostels) + len(girls_hostels)
     total_active = sum(1 for b in buildings if b.get('is_active', True))
 
     return render(request, 'campus/admin/buildings.html', {
         "buildings": buildings,
+        "boys_hostels": boys_hostels,
+        "girls_hostels": girls_hostels,
+        "academic_blocks": academic_blocks,
+        "facilities": facilities,
+        "other_buildings": other_buildings,
         "total_hostels": total_hostels,
         "total_active": total_active,
         "admin_name": request.session.get('admin_name', 'Administrator')

@@ -52,48 +52,91 @@
   </div>
 </div>
 
-<!-- Buildings Grid -->
-<div class="data-table-card">
-  <div class="data-table-header">
-    <div>
-      <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Campus Infrastructure Directory</h2>
-      <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 2px;">Hostels and facility blocks wired to automatic defect routing</p>
+<!-- Category Navigation & Live Search Toolbar -->
+<div class="clean-card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: #FFFFFF; border-color: var(--border-light);">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <!-- Category Tabs -->
+    <div class="category-filter-pills" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+      <button type="button" class="category-pill active" onclick="filterCategory('all', this)">
+        <span>All Units</span>
+        <span class="count-badge">{{ buildings|length }}</span>
+      </button>
+      <button type="button" class="category-pill" onclick="filterCategory('boys_hostels', this)">
+        <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #2563EB;"></span>
+        <span>Boys Hostels</span>
+        <span class="count-badge">{{ boys_hostels|length }}</span>
+      </button>
+      <button type="button" class="category-pill" onclick="filterCategory('girls_hostels', this)">
+        <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #DB2777;"></span>
+        <span>Girls Hostels</span>
+        <span class="count-badge">{{ girls_hostels|length }}</span>
+      </button>
+      <button type="button" class="category-pill" onclick="filterCategory('academic_blocks', this)">
+        <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #059669;"></span>
+        <span>Academic Blocks</span>
+        <span class="count-badge">{{ academic_blocks|length }}</span>
+      </button>
+      <button type="button" class="category-pill" onclick="filterCategory('facilities', this)">
+        <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #EA580C;"></span>
+        <span>Facilities</span>
+        <span class="count-badge">{{ facilities|length }}</span>
+      </button>
     </div>
-    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
-      {{ total_active }} active units
+
+    <!-- Live Search Input -->
+    <div style="position: relative; width: 100%; max-width: 280px;">
+      <input type="text" id="buildingSearchInput" onkeyup="searchBuildings()" placeholder="Search code or name..." class="form-input-clean" style="height: 38px; padding-left: 2.25rem; font-size: 0.8125rem;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     </div>
   </div>
+</div>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; padding: 1.25rem;">
-    {% for b in buildings %}
-      <div class="clean-card" style="padding: 1rem; border-color: var(--border-light); background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+<!-- =========================================================================
+     CATEGORY 1: BOYS HOSTELS (BH1 - BH13)
+     ========================================================================= -->
+<div class="infrastructure-category-section" id="cat-boys_hostels" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 2px solid #DBEAFE;">
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: #EFF6FF; border: 1px solid #BFDBFE; display: flex; align-items: center; justify-content: center; color: #2563EB;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      </div>
+      <div>
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: #1E3A8A; margin: 0;">Boys Residential Hostels</h2>
+        <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Undergraduate & Postgraduate male residential halls (BH1 through BH13)</p>
+      </div>
+    </div>
+    <span style="font-size: 0.75rem; font-weight: 700; color: #2563EB; background: #EFF6FF; padding: 3px 10px; border-radius: var(--radius-full); border: 1px solid #BFDBFE;">
+      {{ boys_hostels|length }} Halls
+    </span>
+  </div>
+
+  <div class="building-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+    {% for b in boys_hostels %}
+      <div class="clean-card building-item-card" data-code="{{ b.code|lower }}" data-name="{{ b.name|lower }}" style="padding: 1rem; border-color: #E2E8F0; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--orange-primary); background: var(--orange-light); padding: 2px 8px; border-radius: var(--radius-sm);">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #2563EB; background: #EFF6FF; padding: 2px 8px; border-radius: var(--radius-sm); border: 1px solid #DBEAFE;">
               {{ b.code }}
             </span>
-            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; {% if b.type == 'HOSTEL_BOYS' %}color: #2563EB;{% elif b.type == 'HOSTEL_GIRLS' %}color: #DB2777;{% else %}color: #059669;{% endif %}">
-              {% if b.type == 'HOSTEL_BOYS' %}Boys Hostel
-              {% elif b.type == 'HOSTEL_GIRLS' %}Girls Hostel
-              {% elif b.type == 'ACADEMIC' %}Academic Block
-              {% else %}Campus Facility{% endif %}
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #2563EB;">
+              Boys Hostel
             </span>
           </div>
 
-          <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
             {{ b.name }}
           </h3>
 
           <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">
-            <div>Floors: <strong>{{ b.total_floors|default:"6" }}</strong></div>
+            <div>Floors: <strong>{{ b.total_floors|default:"10" }}</strong></div>
             <div>Warden / Desk: <strong>{{ b.warden_contact|default:"Campus Central Operations" }}</strong></div>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; pt: 0.75rem; border-top: 1px solid var(--border-light); margin-top: 0.5rem; padding-top: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); margin-top: 0.5rem; padding-top: 0.5rem;">
           <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; {% if b.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
             <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
-            {% if b.is_active %}Operational{% else %}Under Renovation{% endif %}
+            {% if b.is_active %}Operational{% else %}Under Maintenance{% endif %}
           </span>
 
           <form method="POST" action="{% url 'admin_buildings' %}" style="margin: 0;">
@@ -109,6 +152,273 @@
     {% endfor %}
   </div>
 </div>
+
+<!-- =========================================================================
+     CATEGORY 2: GIRLS HOSTELS (GH1 - GH13)
+     ========================================================================= -->
+<div class="infrastructure-category-section" id="cat-girls_hostels" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 2px solid #FCE7F3;">
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: #FDF2F8; border: 1px solid #FBCFE8; display: flex; align-items: center; justify-content: center; color: #DB2777;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      </div>
+      <div>
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: #831843; margin: 0;">Girls Residential Hostels</h2>
+        <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Undergraduate & Postgraduate female residential halls (GH1 through GH13)</p>
+      </div>
+    </div>
+    <span style="font-size: 0.75rem; font-weight: 700; color: #DB2777; background: #FDF2F8; padding: 3px 10px; border-radius: var(--radius-full); border: 1px solid #FBCFE8;">
+      {{ girls_hostels|length }} Halls
+    </span>
+  </div>
+
+  <div class="building-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+    {% for b in girls_hostels %}
+      <div class="clean-card building-item-card" data-code="{{ b.code|lower }}" data-name="{{ b.name|lower }}" style="padding: 1rem; border-color: #E2E8F0; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #DB2777; background: #FDF2F8; padding: 2px 8px; border-radius: var(--radius-sm); border: 1px solid #FCE7F3;">
+              {{ b.code }}
+            </span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #DB2777;">
+              Girls Hostel
+            </span>
+          </div>
+
+          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+            {{ b.name }}
+          </h3>
+
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">
+            <div>Floors: <strong>{{ b.total_floors|default:"10" }}</strong></div>
+            <div>Warden / Desk: <strong>{{ b.warden_contact|default:"Campus Central Operations" }}</strong></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); margin-top: 0.5rem; padding-top: 0.5rem;">
+          <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; {% if b.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+            {% if b.is_active %}Operational{% else %}Under Maintenance{% endif %}
+          </span>
+
+          <form method="POST" action="{% url 'admin_buildings' %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_status">
+            <input type="hidden" name="bldg_id" value="{{ b.id }}">
+            <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+              {% if b.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- =========================================================================
+     CATEGORY 3: ACADEMIC BLOCKS & LECTURE COMPLEXES
+     ========================================================================= -->
+<div class="infrastructure-category-section" id="cat-academic_blocks" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 2px solid #D1FAE5;">
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: #ECFDF5; border: 1px solid #A7F3D0; display: flex; align-items: center; justify-content: center; color: #059669;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      </div>
+      <div>
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: #065F46; margin: 0;">Academic Blocks & Lecture Complexes</h2>
+        <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Classroom buildings, engineering labs, lecture halls, and department complexes</p>
+      </div>
+    </div>
+    <span style="font-size: 0.75rem; font-weight: 700; color: #059669; background: #ECFDF5; padding: 3px 10px; border-radius: var(--radius-full); border: 1px solid #A7F3D0;">
+      {{ academic_blocks|length }} Academic Blocks
+    </span>
+  </div>
+
+  <div class="building-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+    {% for b in academic_blocks %}
+      <div class="clean-card building-item-card" data-code="{{ b.code|lower }}" data-name="{{ b.name|lower }}" style="padding: 1rem; border-color: #E2E8F0; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ECFDF5; padding: 2px 8px; border-radius: var(--radius-sm); border: 1px solid #D1FAE5;">
+              {{ b.code }}
+            </span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #059669;">
+              Academic Block
+            </span>
+          </div>
+
+          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+            {{ b.name }}
+          </h3>
+
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">
+            <div>Floors: <strong>{{ b.total_floors|default:"6" }}</strong></div>
+            <div>Desk / Operations: <strong>{{ b.warden_contact|default:"Faculty Administration" }}</strong></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); margin-top: 0.5rem; padding-top: 0.5rem;">
+          <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; {% if b.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+            {% if b.is_active %}Operational{% else %}Under Maintenance{% endif %}
+          </span>
+
+          <form method="POST" action="{% url 'admin_buildings' %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_status">
+            <input type="hidden" name="bldg_id" value="{{ b.id }}">
+            <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+              {% if b.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- =========================================================================
+     CATEGORY 4: CAMPUS FACILITIES & AMENITIES
+     ========================================================================= -->
+<div class="infrastructure-category-section" id="cat-facilities" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 2px solid #FFEDD5;">
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: #FFF7ED; border: 1px solid #FED7AA; display: flex; align-items: center; justify-content: center; color: #EA580C;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+      </div>
+      <div>
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: #9A3412; margin: 0;">Campus Facilities & Amenities</h2>
+        <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Central Library, Food Courts, Student Centers, and Indoor Sports Complexes</p>
+      </div>
+    </div>
+    <span style="font-size: 0.75rem; font-weight: 700; color: #EA580C; background: #FFF7ED; padding: 3px 10px; border-radius: var(--radius-full); border: 1px solid #FED7AA;">
+      {{ facilities|length }} Facilities
+    </span>
+  </div>
+
+  <div class="building-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+    {% for b in facilities %}
+      <div class="clean-card building-item-card" data-code="{{ b.code|lower }}" data-name="{{ b.name|lower }}" style="padding: 1rem; border-color: #E2E8F0; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: #EA580C; background: #FFF7ED; padding: 2px 8px; border-radius: var(--radius-sm); border: 1px solid #FFEDD5;">
+              {{ b.code }}
+            </span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #EA580C;">
+              Campus Facility
+            </span>
+          </div>
+
+          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">
+            {{ b.name }}
+          </h3>
+
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.5;">
+            <div>Floors: <strong>{{ b.total_floors|default:"3" }}</strong></div>
+            <div>Helpdesk: <strong>{{ b.warden_contact|default:"Facility Management" }}</strong></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); margin-top: 0.5rem; padding-top: 0.5rem;">
+          <span style="font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; {% if b.is_active %}color: #059669;{% else %}color: #DC2626;{% endif %}">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+            {% if b.is_active %}Operational{% else %}Under Maintenance{% endif %}
+          </span>
+
+          <form method="POST" action="{% url 'admin_buildings' %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_status">
+            <input type="hidden" name="bldg_id" value="{{ b.id }}">
+            <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+              {% if b.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if other_buildings %}
+<!-- Other Custom Buildings -->
+<div class="infrastructure-category-section" id="cat-other_buildings" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 2px solid #E2E8F0;">
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <div>
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0;">Additional Campus Units</h2>
+      </div>
+    </div>
+    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); background: #F1F5F9; padding: 3px 10px; border-radius: var(--radius-full);">
+      {{ other_buildings|length }} Units
+    </span>
+  </div>
+
+  <div class="building-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+    {% for b in other_buildings %}
+      <div class="clean-card building-item-card" data-code="{{ b.code|lower }}" data-name="{{ b.name|lower }}" style="padding: 1rem; border-color: #E2E8F0; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--text-primary); background: #F1F5F9; padding: 2px 8px; border-radius: var(--radius-sm);">
+              {{ b.code }}
+            </span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">
+              General
+            </span>
+          </div>
+          <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">{{ b.name }}</h3>
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+            <div>Floors: <strong>{{ b.total_floors|default:"1" }}</strong></div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Client-side Interactive Filter Script -->
+<script>
+function filterCategory(catId, btnEl) {
+  // Update active pill button
+  document.querySelectorAll('.category-pill').forEach(btn => btn.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  const sections = document.querySelectorAll('.infrastructure-category-section');
+  if (catId === 'all') {
+    sections.forEach(s => s.style.display = 'block');
+  } else {
+    sections.forEach(s => {
+      if (s.id === 'cat-' + catId) {
+        s.style.display = 'block';
+      } else {
+        s.style.display = 'none';
+      }
+    });
+  }
+}
+
+function searchBuildings() {
+  const query = document.getElementById('buildingSearchInput').value.trim().toLowerCase();
+  const sections = document.querySelectorAll('.infrastructure-category-section');
+
+  sections.forEach(sec => {
+    let visibleCount = 0;
+    const cards = sec.querySelectorAll('.building-item-card');
+    cards.forEach(card => {
+      const code = card.getAttribute('data-code') || '';
+      const name = card.getAttribute('data-name') || '';
+      if (!query || code.includes(query) || name.includes(query)) {
+        card.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    // Hide section if no cards matched query
+    sec.style.display = (visibleCount > 0) ? 'block' : 'none';
+  });
+}
+</script>
 
 <!-- Add Building Modal -->
 <div id="addBuildingModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">

@@ -151,7 +151,14 @@ function initHostelLocationAutofill() {
   function applyHostelAutofill(flashHighlight = false) {
     if (!defaultHostel && !defaultRoom) return;
 
-    if (defaultHostel) bldInput.value = defaultHostel;
+    if (defaultHostel) {
+      bldInput.value = defaultHostel;
+      const bldLabel = document.getElementById('bldgDropdownSelectedText');
+      if (bldLabel) {
+        bldLabel.innerHTML = `<span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary); margin-right: 6px;">${defaultHostel}</span> <span style="color: var(--text-secondary); font-weight: 500;">(Registered Hostel)</span>`;
+        bldLabel.style.color = 'var(--text-primary)';
+      }
+    }
     if (defaultRoom) roomInput.value = defaultRoom;
     if (floorInput && !floorInput.value) {
       const inferred = inferFloor(defaultRoom);
@@ -163,7 +170,8 @@ function initHostelLocationAutofill() {
     }
 
     if (flashHighlight) {
-      [bldInput, roomInput].forEach(inp => {
+      const trigger = document.getElementById('bldgDropdownTrigger') || bldInput;
+      [trigger, roomInput].forEach(inp => {
         inp.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
         inp.style.borderColor = 'var(--orange-primary)';
         inp.style.boxShadow = '0 0 0 3px rgba(255, 87, 34, 0.2)';
@@ -185,6 +193,11 @@ function initHostelLocationAutofill() {
       // If the fields currently equal the default hostel/room, reset them for fresh entry
       if (bldInput.value === defaultHostel && defaultHostel) {
         bldInput.value = '';
+        const bldLabel = document.getElementById('bldgDropdownSelectedText');
+        if (bldLabel) {
+          bldLabel.innerHTML = 'Select campus block or hostel...';
+          bldLabel.style.color = '#9CA3AF';
+        }
       }
       if (roomInput.value === defaultRoom && defaultRoom) {
         roomInput.value = '';
