@@ -177,7 +177,7 @@
           <select name="department_id" class="form-input-clean" required>
             <option value="">-- Choose Department --</option>
             {% for d in departments %}
-              <option value="{{ d.id|default:d._id }}">{{ d.name }}</option>
+              <option value="{{ d.id }}">{{ d.name }}</option>
             {% endfor %}
           </select>
         </div>
