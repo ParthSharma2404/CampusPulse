@@ -29,6 +29,7 @@ ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.vercel.app',
+    'https://campus-pulse-nine-jade.vercel.app',
     'https://*.onrender.com',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
@@ -79,12 +80,32 @@ WSGI_APPLICATION = 'campuspulse.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+IS_VERCEL = os.getenv('VERCEL') == '1' or 'VERCEL' in os.environ
+
+if IS_VERCEL:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/tmp/db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# Session Engine: Use signed_cookies for stateless, 100% serverless Vercel compatibility
+# Eliminates read-only SQLite database operational errors on login/registration
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Message Storage: Use cookie storage to avoid SQLite writes on serverless
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 
 # Password validation

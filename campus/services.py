@@ -275,21 +275,31 @@ def resolve_issue_and_notify(
 
 
 def save_uploaded_file(uploaded_file, subfolder="issues"):
-    """Saves an uploaded image into media directory and returns web URL."""
+    """Saves an uploaded image into media directory or returns Base64 data URL on serverless read-only systems."""
     if not uploaded_file:
         return None
         
-    upload_dir = settings.BASE_DIR / 'media' / subfolder
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    ext = os.path.splitext(uploaded_file.name)[1].lower()
-    if not ext:
-        ext = ".jpg"
-    unique_filename = f"{uuid.uuid4().hex}{ext}"
-    dest_path = upload_dir / unique_filename
-    
-    with open(dest_path, 'wb+') as destination:
-        for chunk in uploaded_file.chunks():
-            destination.write(chunk)
-            
-    return f"{settings.MEDIA_URL}{subfolder}/{unique_filename}"
+    try:
+        upload_dir = settings.BASE_DIR / 'media' / subfolder
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        ext = os.path.splitext(uploaded_file.name)[1].lower()
+        if not ext:
+            ext = ".jpg"
+        unique_filename = f"{uuid.uuid4().hex}{ext}"
+        dest_path = upload_dir / unique_filename
+        
+        with open(dest_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+                
+        return f"{settings.MEDIA_URL}{subfolder}/{unique_filename}"
+    except (OSError, PermissionError):
+        # Graceful fallback for serverless read-only environments (e.g. Vercel)
+        import base64
+        ext = os.path.splitext(uploaded_file.name)[1].lower().replace('.', '') or "jpeg"
+        if ext == 'jpg':
+            ext = 'jpeg'
+        uploaded_file.seek(0)
+        encoded = base64.b64encode(uploaded_file.read()).decode('utf-8')
+        return f"data:image/{ext};base64,{encoded}"
