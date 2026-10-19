@@ -31,8 +31,11 @@
       </button>
     </form>
 
-    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-secondary);">
-      New student? <a href="{% url 'student_register' %}" style="color: var(--orange-primary); font-weight: 600;">Create an account</a>
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
+      <div>New student? <a href="{% url 'student_register' %}" style="color: var(--orange-primary); font-weight: 600;">Create an account</a></div>
+      <div style="font-size: 0.8125rem; border-top: 1px solid var(--border-light); padding-top: 0.75rem; margin-top: 0.25rem;">
+        Maintenance staff? <a href="{% url 'employee_login' %}" style="color: var(--text-primary); font-weight: 700; text-decoration: underline;">Sign In to Duty Portal</a>
+      </div>
     </div>
   </div>
 </div>

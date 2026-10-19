@@ -17,8 +17,9 @@
       <a href="{% url 'landing' %}#screen-proof-faq" style="transition: color 0.15s ease;">FAQs</a>
     </nav>
 
-    <div style="display: flex; align-items: center; gap: 0.875rem;">
-      <a href="{% url 'admin_login' %}" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); padding: 0.45rem 0.75rem; border-radius: var(--radius-sm); transition: color 0.15s ease;">Staff Admin</a>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <a href="{% url 'employee_login' %}" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); padding: 0.45rem 0.65rem; border-radius: var(--radius-sm); transition: color 0.15s ease;">Staff Portal</a>
+      <a href="{% url 'admin_login' %}" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); padding: 0.45rem 0.65rem; border-radius: var(--radius-sm); transition: color 0.15s ease;">Admin</a>
       {% if request.session.student_id %}
         <a href="{% url 'student_dashboard' %}" class="btn-clean btn-clean-orange btn-clean-sm">My Dashboard</a>
       {% elif request.session.admin_id %}
