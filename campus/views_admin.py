@@ -16,7 +16,9 @@ from .db import (
 )
 from .services import (
     resolve_issue_and_notify,
-    save_uploaded_file
+    save_uploaded_file,
+    auto_allocate_pending_issues,
+    auto_assign_single_issue
 )
 
 def admin_login_required(view_func):
@@ -230,6 +232,37 @@ def admin_resolve_issue_view(request, issue_id):
 
 
 @admin_login_required
+@require_POST
+def admin_auto_assign_ticket_view(request, issue_id):
+    """Admin 1-click auto-assign on an individual unassigned complaint."""
+    try:
+        issue_obj_id = ObjectId(issue_id)
+    except Exception:
+        messages.error(request, "Invalid complaint ID.")
+        return redirect('admin_dashboard')
+
+    success, msg, emp_info = auto_assign_single_issue(issue_obj_id)
+    if success:
+        messages.success(request, f"Complaint assigned successfully: {msg}")
+    else:
+        messages.error(request, f"Could not auto-assign: {msg}")
+
+    return redirect('admin_dashboard')
+
+
+@admin_login_required
+@require_POST
+def admin_auto_assign_all_view(request):
+    """Admin global sweep to auto-allocate all open unassigned complaints to on-duty staff."""
+    allocated = auto_allocate_pending_issues()
+    if allocated > 0:
+        messages.success(request, f"Auto-allocation sweep complete: {allocated} complaint(s) successfully assigned to on-duty staff.")
+    else:
+        messages.info(request, "Auto-allocation sweep complete. All eligible complaints are already assigned, or no matching on-duty staff were found.")
+    return redirect('admin_dashboard')
+
+
+@admin_login_required
 def admin_departments_view(request):
     """Dynamic department management: Admin can add new departments directly through their dashboard."""
     dept_coll = get_departments_collection()
@@ -412,7 +445,11 @@ def admin_employees_view(request):
                 "created_at": datetime.utcnow()
             }
             users_coll.insert_one(emp_doc)
-            messages.success(request, f"Employee '{name}' ({employee_id}) successfully registered with duty on {len(assigned_buildings)} building(s).")
+            allocated = auto_allocate_pending_issues(assigned_buildings, dept_obj_id)
+            if allocated > 0:
+                messages.success(request, f"Employee '{name}' ({employee_id}) successfully registered! Auto-assigned to {allocated} pending complaint(s) for their assigned blocks.")
+            else:
+                messages.success(request, f"Employee '{name}' ({employee_id}) successfully registered with duty on {len(assigned_buildings)} building(s).")
             return redirect('admin_employees')
 
         elif action == 'toggle_status':
@@ -423,7 +460,14 @@ def admin_employees_view(request):
                     new_status = not emp.get('is_active', True)
                     users_coll.update_one({"_id": ObjectId(emp_id)}, {"$set": {"is_active": new_status}})
                     status_str = "Activated" if new_status else "Deactivated"
-                    messages.success(request, f"Staff '{emp.get('name')}' {status_str}.")
+                    if new_status:
+                        allocated = auto_allocate_pending_issues(emp.get('assigned_buildings', []), emp.get('department_id'))
+                        if allocated > 0:
+                            messages.success(request, f"Staff '{emp.get('name')}' activated! Auto-assigned {allocated} open complaint(s).")
+                        else:
+                            messages.success(request, f"Staff '{emp.get('name')}' {status_str}.")
+                    else:
+                        messages.success(request, f"Staff '{emp.get('name')}' {status_str}.")
             return redirect('admin_employees')
 
         elif action == 'reassign_duty':
@@ -433,11 +477,16 @@ def admin_employees_view(request):
                 messages.error(request, "Duty block selection is required. Please select at least one building.")
                 return redirect('admin_employees')
             if emp_id:
+                emp = users_coll.find_one({"_id": ObjectId(emp_id), "role": "employee"})
                 users_coll.update_one(
                     {"_id": ObjectId(emp_id), "role": "employee"},
                     {"$set": {"assigned_buildings": new_buildings, "updated_at": datetime.utcnow()}}
                 )
-                messages.success(request, f"Staff duty updated ({len(new_buildings)} blocks assigned).")
+                allocated = auto_allocate_pending_issues(new_buildings, emp.get('department_id') if emp else None)
+                if allocated > 0:
+                    messages.success(request, f"Staff duty updated ({len(new_buildings)} blocks). Auto-assigned {allocated} pending complaint(s)!")
+                else:
+                    messages.success(request, f"Staff duty updated ({len(new_buildings)} blocks assigned).")
             return redirect('admin_employees')
 
     # Fetch employees, departments, and active buildings

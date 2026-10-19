@@ -80,13 +80,19 @@
 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
   
   <!-- Status Toggle Buttons -->
-  <div style="display: flex; gap: 0.5rem;">
+  <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
     <a href="?status=REPORTED{% if selected_dept %}&dept={{ selected_dept }}{% endif %}" class="btn-clean btn-clean-sm {% if status_filter == 'REPORTED' %}btn-clean-primary{% else %}btn-clean-secondary{% endif %}">
       Active Hotspots ({{ total_active_hotspots }})
     </a>
     <a href="?status=RESOLVED{% if selected_dept %}&dept={{ selected_dept }}{% endif %}" class="btn-clean btn-clean-sm {% if status_filter == 'RESOLVED' %}btn-clean-primary{% else %}btn-clean-secondary{% endif %}">
       Resolved Archive ({{ total_resolved }})
     </a>
+    <form method="POST" action="{% url 'admin_auto_assign_all' %}" style="display: inline; margin: 0;">
+      {% csrf_token %}
+      <button type="submit" class="btn-clean btn-clean-secondary btn-clean-sm" style="border-color: #059669; color: #065F46;" title="Sweep and auto-allocate unassigned complaints to on-duty staff">
+        Auto-Assign All
+      </button>
+    </form>
   </div>
 
   <!-- Search Input -->
@@ -166,6 +172,13 @@
           </div>
           {% if issue.assigned_to.phone %}
             <a href="tel:{{ issue.assigned_to.phone }}" style="color: #059669; font-weight: 700; font-size: 0.75rem; text-decoration: none;">{{ issue.assigned_to.phone }}</a>
+          {% elif not issue.assigned_to and issue.status != 'RESOLVED' %}
+            <form method="POST" action="{% url 'admin_auto_assign_ticket' issue.id %}" style="display: inline; margin: 0;">
+              {% csrf_token %}
+              <button type="submit" class="btn-clean btn-clean-secondary btn-clean-xs" style="padding: 2px 8px; font-size: 0.72rem; border-color: #059669; color: #059669; background: #FFFFFF; font-weight: 600;" title="Auto-match on-duty staff for this building">
+                Auto-Assign Staff
+              </button>
+            </form>
           {% endif %}
         </div>
 

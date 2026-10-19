@@ -37,30 +37,65 @@ def calculate_priority_from_count(count: int) -> str:
 import re
 
 def normalize_building_code(building_str: str) -> list:
-    """Returns canonical building codes for fuzzy matching (e.g. 'BH13', 'Boys Hostel 13' -> ['BH13', 'BOYS HOSTEL 13'])."""
+    """Returns canonical building codes for fuzzy matching across hostels, academic blocks, and campus facilities."""
     b = (building_str or '').strip().upper()
-    variants = [b]
-    # Check BH pattern: BH13, BH-13, BOYS HOSTEL 13, BH 13
-    bh_match = re.search(r'\b(?:BH|BOYS HOSTEL)[\s\-]?(\d{1,2})\b', b)
+    if not b:
+        return []
+    variants = {b}
+
+    # 1. BH pattern: BH13, BH-13, BOYS HOSTEL 13, BH 13, HOSTEL BH 13
+    bh_match = re.search(r'\b(?:BH|BOYS\s+HOSTEL|HOSTEL\s+BH)[\s\-]?(\d{1,3})\b', b)
     if bh_match:
         num = bh_match.group(1)
-        variants.extend([f"BH{num}", f"BOYS HOSTEL {num}"])
-    # Check GH pattern: GH13, GH-13, GIRLS HOSTEL 13, GH 13
-    gh_match = re.search(r'\b(?:GH|GIRLS HOSTEL)[\s\-]?(\d{1,2})\b', b)
+        variants.update([f"BH{num}", f"BH-{num}", f"BH {num}", f"BOYS HOSTEL {num}", f"HOSTEL {num}", num])
+
+    # 2. GH pattern: GH13, GH-13, GIRLS HOSTEL 13, GH 13, HOSTEL GH 13
+    gh_match = re.search(r'\b(?:GH|GIRLS\s+HOSTEL|HOSTEL\s+GH)[\s\-]?(\d{1,3})\b', b)
     if gh_match:
         num = gh_match.group(1)
-        variants.extend([f"GH{num}", f"GIRLS HOSTEL {num}"])
-    return list(set(variants))
+        variants.update([f"GH{num}", f"GH-{num}", f"GH {num}", f"GIRLS HOSTEL {num}", f"HOSTEL {num}", num])
+
+    # 3. Academic Block / Block pattern: Block 33, Academic Block 33, Acad 33, B33, B-33
+    block_match = re.search(r'\b(?:ACADEMIC\s+BLOCK|ACAD\s+BLOCK|ACAD|BLOCK|B)[\s\-]?(\d{1,3})\b', b)
+    if block_match:
+        num = block_match.group(1)
+        variants.update([num, f"BLOCK {num}", f"BLOCK-{num}", f"BLOCK{num}", f"ACADEMIC BLOCK {num}", f"ACAD {num}", f"B-{num}", f"B{num}"])
+
+    # 4. Pure numeric code: e.g. "33"
+    if b.isdigit():
+        variants.update([b, f"BLOCK {b}", f"BLOCK-{b}", f"BLOCK{b}", f"ACADEMIC BLOCK {b}", f"ACAD {b}", f"B-{b}", f"B{b}"])
+
+    return list(variants)
 
 def find_on_duty_employee(building: str, department_id: ObjectId):
     """
     Finds active operational technician/employee on duty for the given building and department.
+    Performs multi-variant fuzzy matching and case-insensitive lookup.
     """
     users = get_users_collection()
     variants = normalize_building_code(building)
-    
-    # 1. Exact or regex match in assigned_buildings
+    if not variants:
+        variants = [(building or '').strip()]
+
+    # 1. Direct multi-case array match
+    all_cases = set()
     for v in variants:
+        if v:
+            all_cases.update([v, v.upper(), v.lower(), v.title()])
+
+    emp = users.find_one({
+        "role": "employee",
+        "is_active": True,
+        "department_id": department_id,
+        "assigned_buildings": {"$in": list(all_cases)}
+    })
+    if emp:
+        return emp
+
+    # 2. Regex matching in assigned_buildings
+    for v in variants:
+        if not v:
+            continue
         emp = users.find_one({
             "role": "employee",
             "is_active": True,
@@ -70,18 +105,108 @@ def find_on_duty_employee(building: str, department_id: ObjectId):
         if emp:
             return emp
 
-    # 2. Substring or direct element match
-    for v in variants:
-        emp = users.find_one({
-            "role": "employee",
-            "is_active": True,
-            "department_id": department_id,
-            "assigned_buildings": {"$in": [v, v.title(), v.lower(), v.upper()]}
-        })
-        if emp:
-            return emp
-
     return None
+
+def auto_allocate_pending_issues(buildings=None, department_id=None):
+    """
+    Retroactively sweeps open unassigned issues (status == 'REPORTED', assigned_to == None)
+    and automatically allocates them to eligible on-duty employees.
+    Can be filtered by specific buildings and/or department.
+    Returns: count of newly assigned issues.
+    """
+    issues_coll = get_issues_collection()
+    query = {
+        "status": "REPORTED",
+        "$or": [
+            {"assigned_to": None},
+            {"assigned_to": {"$exists": False}}
+        ]
+    }
+    if department_id:
+        query["department_id"] = department_id
+
+    pending_issues = list(issues_coll.find(query))
+    allocated_count = 0
+
+    filter_variants = set()
+    if buildings:
+        for b in buildings:
+            for v in normalize_building_code(b):
+                filter_variants.update([v, v.upper(), v.lower(), v.title()])
+
+    for issue in pending_issues:
+        bldg = issue.get("location", {}).get("building_or_block", "")
+        dept_id = issue.get("department_id")
+        if not bldg or not dept_id:
+            continue
+
+        if filter_variants:
+            issue_variants = normalize_building_code(bldg)
+            if not any(iv in filter_variants for iv in issue_variants):
+                continue
+
+        on_duty_emp = find_on_duty_employee(bldg, dept_id)
+        if on_duty_emp:
+            assigned_to_info = {
+                "employee_id": on_duty_emp["_id"],
+                "name": on_duty_emp.get("name"),
+                "employee_code": on_duty_emp.get("employee_id"),
+                "phone": on_duty_emp.get("phone"),
+                "allocated_at": datetime.utcnow()
+            }
+            issues_coll.update_one(
+                {"_id": issue["_id"]},
+                {
+                    "$set": {
+                        "status": "ASSIGNED",
+                        "assigned_to": assigned_to_info,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            allocated_count += 1
+
+    return allocated_count
+
+def auto_assign_single_issue(issue_id: ObjectId):
+    """
+    Attempts to auto-assign a single specific issue to an on-duty technician.
+    Returns: (bool success, str message, dict emp_info)
+    """
+    issues_coll = get_issues_collection()
+    issue = issues_coll.find_one({"_id": issue_id})
+    if not issue:
+        return False, "Complaint not found.", None
+
+    bldg = issue.get("location", {}).get("building_or_block", "")
+    dept_id = issue.get("department_id")
+    if not bldg:
+        return False, "Complaint has no building specified.", None
+    if not dept_id:
+        return False, "Complaint has no department assigned.", None
+
+    on_duty_emp = find_on_duty_employee(bldg, dept_id)
+    if not on_duty_emp:
+        return False, f"No active on-duty staff found for '{bldg}'. Please verify duty assignments in Employee Management.", None
+
+    assigned_to_info = {
+        "employee_id": on_duty_emp["_id"],
+        "name": on_duty_emp.get("name"),
+        "employee_code": on_duty_emp.get("employee_id"),
+        "phone": on_duty_emp.get("phone"),
+        "allocated_at": datetime.utcnow()
+    }
+    issues_coll.update_one(
+        {"_id": issue_id},
+        {
+            "$set": {
+                "status": "ASSIGNED",
+                "assigned_to": assigned_to_info,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    return True, f"Assigned to {on_duty_emp.get('name')} ({on_duty_emp.get('employee_id')}).", assigned_to_info
 
 def create_or_cluster_issue(
     student_id: ObjectId,

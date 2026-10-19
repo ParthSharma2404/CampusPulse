@@ -106,13 +106,20 @@ def employee_dashboard_view(request):
     status_filter = request.GET.get('status', 'ACTIVE')
     building_filter = request.GET.get('building', '').strip()
 
+    # Expand assigned buildings into all case and block aliases for fuzzy matching
+    expanded_buildings = set()
+    for b in assigned_buildings:
+        for v in normalize_building_code(b):
+            expanded_buildings.update([v, v.upper(), v.lower(), v.title()])
+    expanded_buildings_list = list(expanded_buildings) if expanded_buildings else assigned_buildings
+
     # Query: issues directly assigned to this employee OR in employee's assigned buildings & department
     base_query = {
         "$or": [
             {"assigned_to.employee_id": emp_id},
             {
                 "department_id": employee.get('department_id'),
-                "location.building_or_block": {"$in": assigned_buildings}
+                "location.building_or_block": {"$in": expanded_buildings_list}
             }
         ]
     }
@@ -136,16 +143,25 @@ def employee_dashboard_view(request):
             issue['resolved_at_fmt'] = issue['resolved_at'].strftime("%b %d, %I:%M %p")
 
     # Metrics
+    duty_match_condition = {
+        "$or": [
+            {"assigned_to.employee_id": emp_id},
+            {
+                "department_id": employee.get('department_id'),
+                "location.building_or_block": {"$in": expanded_buildings_list}
+            }
+        ]
+    }
     count_assigned = issues_coll.count_documents({
-        "$or": [{"assigned_to.employee_id": emp_id}, {"location.building_or_block": {"$in": assigned_buildings}}],
+        **duty_match_condition,
         "status": {"$in": ["ASSIGNED", "REPORTED"]}
     })
     count_in_progress = issues_coll.count_documents({
-        "$or": [{"assigned_to.employee_id": emp_id}, {"location.building_or_block": {"$in": assigned_buildings}}],
+        **duty_match_condition,
         "status": "IN_PROGRESS"
     })
     count_resolved = issues_coll.count_documents({
-        "$or": [{"assigned_to.employee_id": emp_id}, {"location.building_or_block": {"$in": assigned_buildings}}],
+        **duty_match_condition,
         "status": "RESOLVED"
     })
 
