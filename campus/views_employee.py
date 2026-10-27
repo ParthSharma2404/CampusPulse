@@ -67,6 +67,7 @@ def employee_login_view(request):
         request.session['employee_code'] = emp_user.get('employee_id')
         request.session['employee_role'] = 'employee'
         request.session['employee_dept_id'] = str(emp_user.get('department_id', ''))
+        request.session['role'] = 'employee'
 
         messages.success(request, f"Welcome back, {emp_user.get('name')}! Duty dashboard active.")
         return redirect('employee_dashboard')

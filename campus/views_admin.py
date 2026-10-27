@@ -58,6 +58,7 @@ def admin_login_view(request):
         request.session['admin_id'] = str(admin_user['_id'])
         request.session['admin_name'] = admin_user.get('name', 'Admin')
         request.session['admin_role'] = 'admin'
+        request.session['role'] = 'admin'
 
         messages.success(request, f"Welcome to the Administrative Command Center, {admin_user.get('name')}.")
         return redirect('admin_dashboard')
@@ -67,12 +68,7 @@ def admin_login_view(request):
 
 def admin_logout_view(request):
     """Admin logout view."""
-    if 'admin_id' in request.session:
-        del request.session['admin_id']
-    if 'admin_name' in request.session:
-        del request.session['admin_name']
-    if 'admin_role' in request.session:
-        del request.session['admin_role']
+    request.session.flush()
     messages.info(request, "Logged out of administrative console.")
     return redirect('admin_login')
 

@@ -134,10 +134,15 @@ def student_register_view(request):
             "created_at": datetime.utcnow()
         }
 
+        # Clear any prior session state to prevent cross-portal session contamination
+        request.session.flush()
+
         result = users.insert_one(new_student)
         request.session['student_id'] = str(result.inserted_id)
         request.session['student_name'] = name
         request.session['student_reg_no'] = reg_no
+        request.session['student_role'] = 'student'
+        request.session['role'] = 'student'
 
         messages.success(request, f"Welcome to CampusPulse, {name}! Your account has been created.")
         return redirect('student_dashboard')
@@ -177,6 +182,8 @@ def student_login_view(request):
         request.session['student_id'] = str(user['_id'])
         request.session['student_name'] = user.get('name')
         request.session['student_reg_no'] = user.get('registration_number')
+        request.session['student_role'] = 'student'
+        request.session['role'] = 'student'
 
         messages.success(request, f"Welcome back, {user.get('name')}!")
         return redirect('student_dashboard')
