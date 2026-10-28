@@ -474,7 +474,11 @@ function openResolveModal(issueId, ticketId, title, locationStr) {
 
   if (!modal || !form) return;
 
-  form.action = `/admin/issues/${issueId}/resolve/`;
+  if (window.location.pathname.indexOf('/employee/') !== -1) {
+    form.action = `/employee/issues/${issueId}/resolve/`;
+  } else {
+    form.action = `/admin/issues/${issueId}/resolve/`;
+  }
   if (ticketDisplay) ticketDisplay.innerText = ticketId;
   if (titleDisplay) titleDisplay.innerText = title;
   if (locDisplay) locDisplay.innerText = locationStr;

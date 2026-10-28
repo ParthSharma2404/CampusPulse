@@ -1823,6 +1823,72 @@ html {
     gap: 0.75rem !important;
   }
 
+/* Student Dashboard Responsive Defect Cards */
+.desktop-data-table {
+  display: table;
+  width: 100%;
+}
+
+.mobile-defect-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-data-table {
+    display: none !important;
+  }
+
+  .mobile-defect-cards {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0.85rem 0.75rem;
+  }
+
+  .student-mobile-ticket-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.15rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .topbar-live-sync {
+    display: none !important;
+  }
+
+  .topbar-user-pill span {
+    max-width: 85px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .smart-student-pass {
+    padding: 1.25rem 1.25rem !important;
+    min-height: 220px !important;
+  }
+
+  .pass-reg-no {
+    font-size: clamp(1.15rem, 5.5vw, 1.65rem) !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  .greeting-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .greeting-header div:last-child {
+    width: 100% !important;
+  }
+
+  .greeting-header div:last-child .btn-clean {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
   /* Data Table & Card Horizontal Scroll */
   .data-table-card {
     overflow-x: auto;
@@ -1841,8 +1907,11 @@ html {
   /* Modals on Mobile */
   #addBuildingModal .clean-card,
   #addEmployeeModal .clean-card,
-  #dutyModal .clean-card {
-    max-width: 95% !important;
+  #dutyModal .clean-card,
+  #employeeResolveModal .clean-card,
+  #resolveModal .clean-card,
+  .modal-content {
+    max-width: 95vw !important;
     max-height: 88vh !important;
     overflow-y: auto !important;
     padding: 1.25rem !important;

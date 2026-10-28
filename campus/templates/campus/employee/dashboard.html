@@ -197,7 +197,7 @@
             {% endif %}
 
             {% if issue.status != 'RESOLVED' %}
-              <button type="button" onclick="openResolveModal('{{ issue.id }}', '{{ issue.ticket_id }}', '{{ issue.location.building_or_block }} • {{ issue.location.room_or_area }}');" class="btn-clean btn-clean-orange btn-clean-sm">
+              <button type="button" onclick="openEmployeeResolveModal('{{ issue.id }}', '{{ issue.ticket_id }}', '{{ issue.location.building_or_block }} • {{ issue.location.room_or_area }}');" class="btn-clean btn-clean-orange btn-clean-sm">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 <span>Fulfill & Broadcast Resolution ➔</span>
               </button>
@@ -214,18 +214,18 @@
   </div>
 </div>
 
-<!-- Complete Repair Modal -->
-<div id="resolveModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
-  <div class="clean-card" style="max-width: 520px; width: 100%; background: #FFFFFF; padding: 1.75rem;">
+<!-- Complete Repair Modal (Isolated for Employee Duty Console) -->
+<div id="employeeResolveModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+  <div class="clean-card" style="max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; background: #FFFFFF; padding: 1.75rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
       <div>
         <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0;">Fulfill Defect Repair</h3>
-        <p id="modalTicketSubtitle" style="font-size: 0.8125rem; color: var(--text-secondary); margin: 2px 0 0;"></p>
+        <p id="employeeModalTicketSubtitle" style="font-size: 0.8125rem; color: var(--text-secondary); margin: 2px 0 0;"></p>
       </div>
-      <button type="button" onclick="closeResolveModal();" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+      <button type="button" onclick="closeEmployeeResolveModal();" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);">&times;</button>
     </div>
 
-    <form id="resolveForm" method="POST" action="" enctype="multipart/form-data">
+    <form id="employeeResolveForm" method="POST" action="" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div style="margin-bottom: 1.25rem;">
@@ -243,7 +243,7 @@
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-        <button type="button" onclick="closeResolveModal();" class="btn-clean btn-clean-secondary btn-clean-sm">Cancel</button>
+        <button type="button" onclick="closeEmployeeResolveModal();" class="btn-clean btn-clean-secondary btn-clean-sm">Cancel</button>
         <button type="submit" class="btn-clean btn-clean-orange btn-clean-sm">
           Complete & Push Live Alert ➔
         </button>
@@ -253,17 +253,19 @@
 </div>
 
 <script>
-  function openResolveModal(issueId, ticketId, locationText) {
-    const modal = document.getElementById('resolveModal');
-    const form = document.getElementById('resolveForm');
-    const subtitle = document.getElementById('modalTicketSubtitle');
+  function openEmployeeResolveModal(issueId, ticketId, locationText) {
+    const modal = document.getElementById('employeeResolveModal');
+    const form = document.getElementById('employeeResolveForm');
+    const subtitle = document.getElementById('employeeModalTicketSubtitle');
+    if (!modal || !form) return;
     form.action = '/employee/issues/' + issueId + '/resolve/';
-    subtitle.textContent = '#' + ticketId + ' (' + locationText + ')';
+    if (subtitle) subtitle.textContent = '#' + ticketId + ' (' + locationText + ')';
     modal.style.display = 'flex';
   }
 
-  function closeResolveModal() {
-    document.getElementById('resolveModal').style.display = 'none';
+  function closeEmployeeResolveModal() {
+    const modal = document.getElementById('employeeResolveModal');
+    if (modal) modal.style.display = 'none';
   }
 </script>
 {% endblock %}
