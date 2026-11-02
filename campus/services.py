@@ -10,6 +10,7 @@ from .db import (
     get_notifications_collection,
     hub
 )
+from .ml_triage import evaluate_defect_severity
 
 def generate_ticket_id():
     """Generates a human-friendly ticket ID: CP-YEAR-XXXX."""
@@ -247,11 +248,17 @@ def create_or_cluster_issue(
         new_count = existing_issue.get("report_count", 1) + 1
         new_priority = calculate_priority_from_count(new_count)
         
+        # Check if incoming report introduces an AI-detected hazard
+        cluster_ai_triage = evaluate_defect_severity(title, description)
+        if cluster_ai_triage.get("is_hazard_flagged"):
+            new_priority = "URGENT"
+
         update_data = {
             "$addToSet": {"co_affected_students": student_id},
             "$inc": {"report_count": 1},
             "$set": {
                 "priority": new_priority,
+                "ai_triage": cluster_ai_triage,
                 "updated_at": datetime.utcnow()
             }
         }
@@ -263,7 +270,10 @@ def create_or_cluster_issue(
         issues.update_one({"_id": existing_issue["_id"]}, update_data)
         updated_doc = issues.find_one({"_id": existing_issue["_id"]})
         
-        return updated_doc, False, f"Linked to existing hotspot! Urgency auto-escalated to {new_priority} ({new_count} students affected)."
+        escalate_msg = f"Linked to existing hotspot! Urgency auto-escalated to {new_priority} ({new_count} students affected)."
+        if cluster_ai_triage.get("is_hazard_flagged"):
+            escalate_msg += f" [⚡ AI Hazard Alert: Escalated to URGENT due to {cluster_ai_triage['risk_tier'].replace('_', ' ')}.]"
+        return updated_doc, False, escalate_msg
 
     # Find technician on duty for this building and department
     on_duty_emp = find_on_duty_employee(building, department_id)
@@ -277,6 +287,10 @@ def create_or_cluster_issue(
             "phone": on_duty_emp.get("phone"),
             "allocated_at": datetime.utcnow()
         }
+
+    # Run AI Risk & Hazard Triage Model
+    ai_triage = evaluate_defect_severity(title, description)
+    initial_priority = ai_triage.get("suggested_priority", "LOW")
 
     # If no existing open issue, create a brand new issue
     ticket_id = generate_ticket_id()
@@ -299,7 +313,8 @@ def create_or_cluster_issue(
         "report_count": 1,
         "status": initial_status,
         "assigned_to": assigned_to_info,
-        "priority": "LOW",
+        "priority": initial_priority,
+        "ai_triage": ai_triage,
         "resolution_notes": "",
         "resolution_image": "",
         "resolved_at": None,
@@ -315,6 +330,10 @@ def create_or_cluster_issue(
         feedback_msg = f"Defect reported! Ticket #{ticket_id} has been directly allocated to on-duty technician {on_duty_emp['name']} for {building}."
     else:
         feedback_msg = f"Defect reported! Ticket #{ticket_id} has been submitted to Operations Command."
+
+    if ai_triage.get("is_hazard_flagged"):
+        hazards_str = ", ".join(ai_triage.get("detected_hazards", [])) or "Critical Safety Hazard"
+        feedback_msg += f" [⚡ AI Safety Triage: {hazards_str} detected ({ai_triage['severity_pct']}% Risk Score) — Auto-escalated to {initial_priority}.]"
         
     return new_doc, True, feedback_msg
 

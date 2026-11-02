@@ -144,10 +144,15 @@
                 {% endif %}
               </div>
 
-              <!-- Hotspot / Urgency Badges if applicable -->
-              {% if issue.report_count > 1 or issue.priority == 'URGENT' or issue.priority == 'HIGH' %}
+              <!-- Hotspot / Urgency & AI Risk Badges -->
+              {% if issue.ai_triage and issue.ai_triage.is_hazard_flagged or issue.report_count > 1 or issue.priority == 'URGENT' or issue.priority == 'HIGH' %}
                 <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.6rem;">
-                  {% if issue.priority == 'URGENT' %}
+                  {% if issue.ai_triage and issue.ai_triage.is_hazard_flagged %}
+                    <span style="font-size: 0.7rem; font-weight: 700; color: #991B1B; background: #FEE2E2; border: 1px solid #FECACA; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="AI Safety Model Flagged: {{ issue.ai_triage.detected_hazards|join:', ' }}">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                      AI Risk: {{ issue.ai_triage.severity_pct }}%
+                    </span>
+                  {% elif issue.priority == 'URGENT' %}
                     <span class="priority-pill priority-pill-urgent" style="font-size: 0.7rem; padding: 2px 6px;">Urgent Hotspot</span>
                   {% elif issue.priority == 'HIGH' %}
                     <span class="priority-pill priority-pill-high" style="font-size: 0.7rem; padding: 2px 6px;">High Priority</span>

@@ -24,6 +24,9 @@ urlpatterns = [
     path('api/notifications/stream/', views_student.notification_stream_view, name='notification_stream'),
     path('api/notifications/mark-read/', views_student.mark_all_notifications_read_view, name='mark_notifications_read'),
 
+    # ML Hazard & Risk Triage API
+    path('api/ml/score-risk/', views_student.api_score_risk_view, name='api_score_risk'),
+
     # Stealth Admin Routes (Separated Portal)
     path('admin/login/', views_admin.admin_login_view, name='admin_login'),
     path('admin/logout/', views_admin.admin_logout_view, name='admin_logout'),

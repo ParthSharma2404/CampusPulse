@@ -408,3 +408,20 @@ def mark_all_notifications_read_view(request):
     notif_coll = get_notifications_collection()
     notif_coll.update_many({"recipient_id": student_id, "is_read": False}, {"$set": {"is_read": True}})
     return JsonResponse({"status": "ok"})
+
+
+@csrf_exempt
+def api_score_risk_view(request):
+    """
+    Real-Time AI Hazard & Severity Risk Triage API.
+    Scores incoming defect text to predict risk tier, continuous severity, and hazard tags.
+    """
+    from .ml_triage import evaluate_defect_severity
+
+    title = request.GET.get('title', '') or request.POST.get('title', '')
+    desc = request.GET.get('description', '') or request.POST.get('description', '')
+    dept = request.GET.get('department', '') or request.POST.get('department', '')
+
+    res = evaluate_defect_severity(title, desc, dept)
+    return JsonResponse(res)
+
