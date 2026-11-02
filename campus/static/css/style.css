@@ -1822,6 +1822,7 @@ html {
     grid-template-columns: 1fr !important;
     gap: 0.75rem !important;
   }
+}
 
 /* Student Dashboard Responsive Defect Cards */
 .desktop-data-table {
